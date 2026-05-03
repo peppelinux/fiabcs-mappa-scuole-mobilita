@@ -1,6 +1,6 @@
 # Mappa scuole e mobilità sicura — FIAB Cosenzaciclabile
 
-Applicazione web statica: testo in Markdown (`content.md`), mappa Leaflet (`render.js`), dati GeoJSON in `data/`. La pagina principale è pensata per **famiglie**, **scuole** e **amministratori locali**; questo README raccoglie **metodologia**, **pipeline dati** e **riferimenti tecnici** per sviluppatori e contributori.
+Applicazione web statica: testo in Markdown (`content.md`), mappa Leaflet (`render.js`), dati GeoJSON in `data/`. La **pagina pubblica** (`content.md` + mappa) è scritta per **famiglie**, **scuole** e **amministratori locali** (linguaggio non tecnico). **Questo README** raccoglie metodologia, **parametri numerici**, nomi di file, librerie e pipeline per **sviluppatori e contributori**.
 
 **Logo e favicon:** immagine del profilo dalla pagina Facebook [FIAB Cosenza Ciclabile](https://www.facebook.com/cosenzaciclabile/?locale=it_IT), salvata in `assets/logo-cosenzaciclabile.png` per uso locale. `favicon.ico`, `favicon.svg` (PNG 32×32 incorporato), `assets/favicon-32.png` e `apple-touch-icon.png` sono derivati da quella immagine (rigenerabili con ImageMagick, vedi sotto).
 
@@ -35,7 +35,7 @@ Esegui dalla radice del progetto:
 
 Opzionale se Overpass è sovraccarico: `OVERPASS_URL=https://overpass.kumi.systems/api/interpreter ./scripts/update-critical-segments.sh`
 
-Dopo modifiche alla metodologia, aggiornare **`content.md`** (messaggio pubblico) e questo README (dettaglio tecnico).
+Dopo modifiche alla metodologia: **`content.md`** = messaggio per il pubblico (senza nomi di file o costanti di codice); **README** = dettaglio tecnico e tabella parametri allineata a `render.js`.
 
 ## File principali
 
@@ -60,13 +60,37 @@ Dopo modifiche alla metodologia, aggiornare **`content.md`** (messaggio pubblico
 
 Rappresentazione: **POI scuole** da OpenStreetMap, ciascuno con **cerchio 300 m**, **itinerario critico** in `data.geojson`, **heatmap**, overlay **rete ciclabile**, **pedonalità**, **Open-Meteo** (qualità aria).
 
-### Heatmap (layer termico): scopo e limiti
+### Heatmap (layer termico): scopo, limiti e implementazione
 
-La heatmap **non** è una misura strumentale di traffico in tempo reale né un modello di emissioni: sintetizza **vicinanza e numero delle sedi scolastiche** (e l’intensità legata ai buffer di 300 m) per una **geografia delle priorità**. Zone più “calde” suggeriscono dove intensificare **comunicazione, educazione stradale e progettazione partecipata**; non sostituisce conteggi veicolari o piani ufficiali.
+**Scopo:** sintetizza **vicinanza e numero delle sedi scolastiche** (e l’intensità legata ai buffer di 300 m) per una **geografia delle priorità**. Zone più “calde” suggeriscono dove intensificare comunicazione, educazione stradale e progettazione partecipata.
 
-**Calcolo (client, `render.js`):** per ogni scuola, intensità da peso base + contributi delle altre sedi entro **600 m** (e ulteriore contributo se entro **300 m**); punti intermedi tra coppie di scuole a distanza **inferiore a 600 m** con rafforzamento se altre scuole cadono entro i due buffer; vertici dell’**itinerario critico** con intensità costante **0,35**; poi **Leaflet.heat** (`radius` 44, `blur` 24, `max` 0,92). Spiegazione divulgativa e motivazione delle valutazioni in **`content.md`** (sezione *Metodologia della heatmap*).
+**Limiti:** **non** è traffico strumentale in tempo reale né un modello di emissioni; non sostituisce conteggi veicolari o piani ufficiali. La spiegazione per famiglie e istituzioni, senza riferimenti al codice, è in **`content.md`** (sezione *Mappa delle priorità*).
 
-Implementazione: **Leaflet.heat** su punti derivati dalle sedi (vedi `render.js`).
+**Dove avviene il calcolo:** tutto lato **client** in **`render.js`** (funzione `initMap`), al caricamento dei GeoJSON. Libreria: **`vendor/leaflet-heat.js`** (estensione **Leaflet.heat** per `L.heatLayer`), patch Canvas `willReadFrequently`.
+
+**Flusso dati → punti `[lat, lon, intensità]`:**
+
+1. Ogni sede scuola (`data/schools-poi.geojson`, `kind=school_poi`): intensità da `schoolHeatIntensityAtSchool`.
+2. Coppie di sedi con distanza in (0, 600 m): punto a metà segmento, intensità da `hub` con eventuale moltiplicatore se altre sedi intersecano entrambi i “raggi” di 600 m; deduplica con `pushHeatIfDistinct` (soglie ~22–28 m: punti molto vicini fondono l’intensità max).
+3. Ogni vertice delle coordinate dell’itinerario critico (`data.geojson`, `kind=critical_segment`): intensità **0,35**.
+
+**Tabella parametri (allineata a `render.js`)**
+
+| Elemento | Valore | Note |
+|----------|--------|------|
+| `BUFFER_M` | **300** | Raggio cerchi scuola sulla mappa; stessa scala concettuale per la heatmap. |
+| Distanza max tra sedi per contributi incrociati | **600** m (`bufferDiameter = 2 * BUFFER_M`) | Oltre 600 m due scuole non si influenzano nel peso per-sede né nelle coppie. |
+| Peso base su ogni scuola | **0,38** | `schoolHeatIntensityAtSchool` |
+| Contributo per altra sede entro 600 m | `overlap * 0,34`, `overlap = (600−d)/600` | Somma su tutte le altre sedi nel raggio. |
+| Contributo extra se altra sede entro 300 m | `(1 − d/300) * 0,1` | — |
+| Tetto intensità per sede | **1,18** | `Math.min(1.18, w)` |
+| Coppie sedi: coefficiente base | **0,36** | `hub = 0.36 * t²`, `t = (600−d)/600` |
+| Rafforzo hub (altre sedi che “legano” la coppia) | `1 + 0,22 * (nNear − 2)` | `nNear` conta sedi entro 600 m da **entrambi** i punti della coppia. |
+| Tetto hub al punto medio | **1,05** | `Math.min(1.05, hub)` |
+| Itinerario critico (per vertice polilinea) | **0,35** | Ogni coppia `[lat,lon]` del LineString/MultiLineString. |
+| **Leaflet.heat** | `radius: 44`, `blur: 24`, `maxZoom: 16`, `max: 0,92` | Gradiente colori FIAB definito nello stesso blocco in `render.js`. |
+
+**Itinerario critico (generazione geometria):** script Python e config in **`config/critical-corridor.json`** — sezione README *Itinerario critico e layer OSM* più avanti.
 
 ### Classificazione POI scuole (`data/schools-poi.geojson`)
 

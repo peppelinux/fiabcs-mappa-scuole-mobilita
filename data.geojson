@@ -2,9 +2,9 @@
   "type": "FeatureCollection",
   "name": "heatmap-demo-overlays",
   "properties": {
-    "note": "Itinerario critico: Dijkstra su grafo OSM (highway nella regex, senza cycleway: niente piste ciclabili dedicate nel tracciato). Assi richiesti (Via Pasquale Rossi, Viale della Repubblica, Via Riccardo Misasi, Via Panebianco, Via Pomponio Leto, \u2026). Esclusioni: routing.exclude_ways + segmenti OSM duplicati rimossi. Scuole: data/schools-poi.geojson.",
-    "critical_segments_generated": "2026-05-03T21:47Z",
-    "critical_segments_source": "OpenStreetMap: grafo highway nel bbox, percorso dijkstra tra waypoint configurati; semplificazione \u22656 m. ODbL.",
+    "note": "Itinerario critico: Dijkstra su grafo stradale (carreggiata / assi urbani), non su piste ciclabili dedicate: il builder esclude sempre cycleway, bicycle_road e path con bicycle=designated|official, oltre alla regex in routing. Assi: Via Pasquale Rossi, Viale della Repubblica, Via Riccardo Misasi, Via Panebianco, Via Pomponio Leto, \u2026 Esclusioni: routing.exclude_ways. Scuole: data/schools-poi.geojson.",
+    "critical_segments_generated": "2026-05-03T21:49Z",
+    "critical_segments_source": "OpenStreetMap: grafo nel bbox (senza piste ciclabili dedicate), percorso dijkstra tra waypoint; semplificazione \u22656 m. ODbL.",
     "critical_corridor_config": "critical-corridor.json"
   },
   "features": [

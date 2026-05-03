@@ -4,46 +4,39 @@ L’obiettivo è **valorizzare un’iniziativa di mappatura partecipativa**, dar
 
 ---
 
-## Perché parametri oggettivi
+## Perché partire da dati condivisibili
 
-Le decisioni sul territorio meritano basi **condivisibili**: cosa c’è oggi in strada, dove manca continuità tra marciapiedi e piste, dove l’esposizione all’inquinamento è più critica nelle ore di entrata e uscita. Parametri **documentabili** e **tecnicamente riscontrabili** (anche con fonti aperte e aggiornabili) aiutano **famiglie e scuole** a portare dati al tavolo e **enti locali** a orientare risorse, comunicazione e progetti con maggiore equità e trasparenza.
+Le decisioni sul territorio meritano basi che **tutti possano controllare**: cosa c’è oggi in strada, dove manca continuità tra marciapiedi e piste, dove l’esposizione all’inquinamento è più critica nelle ore di entrata e uscita. Qui usiamo **dati aperti** (mappa collaborativa, modelli orientativi) così **famiglie e scuole** possono portare elementi concreti al tavolo e **enti locali** possono orientare risorse e comunicazione con più trasparenza.
 
-Questa pagina **non sostituisce** conteggi ufficiali di traffico, piani viari o rilievi ARPA: **integra** il dibattito con una visione geografica chiara e ripetibile.
+Questa pagina **non sostituisce** conteggi ufficiali di traffico, piani viari o rilievi ARPA: **integra** il dibattito con una visione geografica chiara.
 
 ---
 
 ## Cosa puoi fare qui
 
 - **Esplorare** le sedi scolastiche e un’area di attenzione di **300 metri** intorno a ciascuna: distanze tipiche a piedi o in bicicletta, coerenti con la letteratura su esposizione al traffico vicino alle scuole.
-- **Confrontare** la **mappa termica** (heatmap) con piste, pedonalità e **itinerario critico**: serve a **individuare dove agire prima** in termini di sensibilizzazione, progettazione e dialogo con il territorio — **non** è una misura strumentale di traffico in tempo reale (come si calcola: sezione seguente).
+- **Confrontare** la **mappa delle priorità** (i colori “caldi” sulla mappa) con piste, pedonalità e **itinerario critico**: aiuta a **vedere dove concentrare** ascolto, progettazione e dialogo — **non** è traffico misurato sul campo (in sintesi sotto; il dettaglio numerico per chi sviluppa o verifica è nel **[README](README.md)** del repository).
 - **Leggere** indicatori di **qualità dell’aria** da modello (tre punti di riferimento): utili come **segnale orientativo**, da affiancare dove possibile a dati di stazione.
 
 Il pannello **«Elenco Dati e Mappe»** in alto a destra sulla mappa consente di scegliere **tipo di carta** e **livelli** da sovrapporre.
 
 ---
 
-## Metodologia della heatmap (mappa termica)
+## Mappa delle priorità (colori “caldi” sulla mappa)
 
-La heatmap risponde a una domanda operativa: **dove molteplici contesti scolastici e i loro “cerchi” di attenzione si avvicinano o si sovrappongono**, suggerendo **priorità geografiche** per ascolto, progetti e valutazioni condivise. Non misura il traffico veicolare né la qualità dell’aria: **motiva** le valutazioni perché è **trasparente**, **ripetibile** e legata a **dati pubblici sulle sedi** (punti scuola nel progetto) e all’**itinerario critico** tracciato dal gruppo.
+La domanda che questa visualizzazione prova a rispondere è semplice: **dove ci sono molte scuole vicine tra loro** (e i rispettivi “intorni” da **300 metri** che già vedi come cerchi sulla mappa), così da suggerire **dove vale la pena concentrare** ascolto, progetti e confronto sul territorio.
 
-### Cosa entra nel calcolo
+**Cosa non è:** non misura il traffico in tempo reale, né la qualità dell’aria al suolo, né dice da sola se un punto è “pericoloso”. I colori più accesi indicano soprattutto **vicinanza e densità** di contesti scolastici nello spazio.
 
-1. **Punti scuola** — ogni sede del dataset ha coordinate note; intorno a ciascuna si lavora mentalmente con il **buffer di 300 m** disegnato sulla mappa (distanze tipiche a piedi o in bici e letteratura sull’esposizione al traffico vicino alle scuole).
+**Cosa c’è dietro, in parole povere**
 
-2. **Intensità su ogni scuola** — Per ogni plesso si parte da un peso di base e si **aumenta il peso** se esistono **altre scuole entro 600 m** (il doppio del buffer): più sono vicine, più cresce il contributo. Se un’altra scuola cade anche **entro 300 m**, si aggiunge un ulteriore contributo legato alla distanza (più è vicina, più pesa). Il risultato è **tappato** a un massimo così da non far esplodere artificialmente i valori. Questo rende visibili i **poli** in cui la domanda di mobilità scolastica si concentra nello spazio.
+- Ogni **sede** conta, con lo stesso raggio di **300 m** che usi già per leggere la mappa.
+- Se **altre scuole** sono abbastanza vicine (fino a circa **il doppio** di quel raggio, quindi fino a **600 m**), il colore si **intensifica**: più plessi vicini, più la zona tende al caldo.
+- Tra due scuole vicine viene valorizzato anche lo **spazio in mezzo**: così emergono “corridoi” dove la domanda di mobilità non è solo su un edificio isolato.
+- La **linea arancione** dell’itinerario critico dà un **contributo costante** lungo il percorso, così la mappa collega le priorità che il gruppo segnala con la geografia delle scuole.
+- I colori si **sfumano** tra un punto e l’altro: è normale che le zone calde sembrino “macchie” morbide — aiuta l’occhio, ma non va letto come una misura al metro.
 
-3. **Zone “tra” due scuole** — Per ogni **coppia** di sedi con distanza **maggiore di zero ma inferiore a 600 m**, si calcola un punto a **metà strada** e un’intensità che cresce quando le due scuole sono **più vicine** (legame quadratico con la distanza). Se **altre** scuole hanno ancora i loro 600 m che intersecano **entrambe** le sedi della coppia, l’intensità viene **rafforzata**: così emergono **hub** dove non c’è solo una scuola isolata, ma una **rete di plessi vicini**.
-
-4. **Itinerario critico** — Ogni vertice della linea dell’itinerario critico sulla mappa aggiunge un **contributo fisso moderato** alla heatmap, così la lettura collega **priorità lungo il corridoio** evidenziato dal gruppo con la **geografia delle scuole**.
-
-5. **Disegno sulla carta** — I punti con intensità passano al modulo **Leaflet.heat** (raggio, sfocatura e scala di colori FIAB), che **interpola** visivamente tra i punti: le zone più calde sono quindi sia **dovute ai dati** sia **lisce** per effetto di visualizzazione (come ogni heatmap).
-
-### Perché questo schema sostiene le valutazioni
-
-- **Tracciabilità** — Le regole sono implementate nel codice della pagina (`render.js`): chi vuole può verificare numeri, costanti e ordine delle operazioni.
-- **Coerenza con il progetto** — Usa le **stesse sedi** e lo **stesso raggio di attenzione** (300 m) che già usate nel resto della mappa, più l’itinerario critico come **segnale di contesto**.
-- **Onestà interpretativa** — Aree calde indicano **concentrazione e prossimità** di esigenze scolastiche nel territorio, non un verdetto su “pericolosità” o congestione misurata.
-- **Utilità politica e didattica** — Supporta domande del tipo: «Dove conviene organizzare per prime assemblee, percorsi educativi o richieste di intervento?» senza sostituire conteggi ARPA, piani del traffico o decisioni amministrative.
+Per **chi vuole riprodurre o verificare** i numeri esatti, i nomi dei file, la libreria che disegna il calore e come viene costruito l’itinerario critico su OpenStreetMap, tutto è nel **[README](README.md)** del repository (sezione sulla heatmap e sugli script).
 
 ---
 
@@ -61,7 +54,7 @@ Area di lavoro: tessuto urbano e periurbano di **Cosenza**, **Rende** (inclusa *
 - Qualità dell’ambiente stradale (es. **marciapiedi**, ostacoli, comfort per spostamenti attivi).
 - **Qualità dell’aria** nelle ore di punta scolastica, letta con strumenti replicabili.
 
-Il dettaglio metodologico, le fonti dati, gli script di aggiornamento e la tabella completa **licenze / repository** sono nel **[README del progetto](README.md)** nel repository.
+Dettaglio tecnico, fonti dati, script di aggiornamento e **licenze / repository** sono nel **[README del progetto](README.md)** nel repository.
 
 ---
 
