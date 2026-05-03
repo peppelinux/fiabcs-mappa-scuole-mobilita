@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Heatmap mobilità sostenibile scolastica — FIAB Cosenzaciclabile · Cosenza, Rende, Andreotta</title>
+    <link rel="icon" href="favicon.ico" sizes="any" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="badge-fiab">FIAB Cosenzaciclabile</div>
+      <h1>Heatmap mobilità sostenibile nei 300 m dalle scuole</h1>
+      <!-- <p>
+        Cosenza, Rende, Andreotta — OpenStreetMap, buffer 300 m, priorità sui tratti in cui la
+        <strong>mobilità sostenibile</strong> (spostamenti sicuri a piedi e in bici, comfort e contesto
+        urbano) risulta <strong>non adeguata</strong> nei pressi delle scuole.
+      </p> -->
+    </header>
+    <div id="fetch-error" class="error-banner" hidden></div>
+    <div class="layout">
+      <div class="article-wrap">
+        <article id="content" class="loading">Caricamento contenuto…</article>
+      </div>
+      <div id="map-wrap">
+        <div id="map" role="application" aria-label="Mappa interattiva"></div>
+        <button
+          type="button"
+          id="layers-panel-toggle"
+          class="map-layers-toggle"
+          aria-pressed="true"
+          aria-label="Comprimi Elenco Dati e Mappe: basemap, scuole, percorsi e altri livelli sulla mappa"
+          title="Comprimi il riquadro Elenco Dati e Mappe (basemap, scuole, asse prioritario, ciclo, pedonalità, aria, heatmap)"
+        >
+          <span class="map-layers-toggle__label">Elenco Dati e Mappe</span>
+        </button>
+        <div class="map-legend-stack">
+          <button
+            type="button"
+            id="legend-toggle-btn"
+            class="legend-toggle-btn"
+            aria-expanded="false"
+            aria-controls="map-legend-panel"
+          >
+            Mostra legenda
+          </button>
+          <div
+            id="map-legend-panel"
+            class="map-legend-panel"
+            role="region"
+            aria-label="Legenda simboli"
+            hidden
+          >
+            <div class="map-legend-inner">
+              <strong>Legenda</strong>
+              <span class="legend-sub">Scuole (OSM, per categoria)</span>
+              <span
+                ><i class="dot legend-dot legend-dot--school-sup" aria-hidden="true"></i> II grado
+                (superiori)</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--school-comp" aria-hidden="true"></i> Istituto
+                comprensivo</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--school-media" aria-hidden="true"></i> I grado
+                (media)</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--school-elem" aria-hidden="true"></i> Primaria
+                (elementare)</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--school-inf" aria-hidden="true"></i> Infanzia /
+                asilo</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--school-nc" aria-hidden="true"></i> Non
+                classificata</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--buffer" aria-hidden="true"></i> Buffer 300 m
+                (intorno a ogni POI)</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--critical" aria-hidden="true"></i> Asse prioritario
+                (mobilità sostenibile non adeguata)</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--cycle" aria-hidden="true"></i> Piste / corsie
+                (OSM)</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--ped" aria-hidden="true"></i> Pedonalità /
+                attraversamenti (OSM)</span
+              >
+              <span
+                ><i class="dot legend-dot legend-dot--air" aria-hidden="true"></i> Aria (Open-Meteo:
+                colore = EAQI; apri il marker per indice e «l’aria è buona?»)</span
+              >
+              <small class="legend-heat-note"
+                ><strong>Heatmap — scopo:</strong> evidenzia dove è <strong>urgente</strong> sensibilizzare e
+                promuovere la <strong>mobilità sostenibile</strong>; colori più caldi (più scuole vicine e
+                buffer sovrapposti) richiamano <strong>rischi e insostenibilità</strong> con
+                <strong>elevate concentrazioni di persone e veicoli urbani</strong> nelle
+                <strong>fasce orarie critiche</strong>. Non è un dato strumentale di traffico.
+                <br />Pannello <strong>Livelli dati</strong> in alto a destra: basemap e overlay.</small
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="site-footer">
+      <p>
+        Materiale originale del progetto:
+        <a
+          href="https://creativecommons.org/licenses/by/4.0/deed.it"
+          rel="license noopener noreferrer"
+          target="_blank"
+          >Creative Commons Attribuzione 4.0 (CC BY 4.0)</a
+        >
+        — dettagli nel file <code>LICENSE</code>. Dati OSM: ODbL. Librerie esterne: licenze proprie.
+      </p>
+    </footer>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="vendor/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+    <script src="render.js" defer></script>
+  </body>
+</html>

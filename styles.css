@@ -1,0 +1,536 @@
+/*
+ * Colori allineati al portale FIAB Italia (tema Econature / personalizzazioni
+ * visibili su fiabitalia.it, es. materiali-grafici: blu #006aa7, #003f66, #2d74ac;
+ * giallo #f1c40f; verde #aed957; neutri #e5e8ec, #2c3e50).
+ * Per valori Pantone/RGB ufficiali del logo: Manuale logo su fiabitalia.it/materiali-grafici.
+ */
+:root {
+  --fiab-blue: #006aa7;
+  --fiab-blue-dark: #003f66;
+  --fiab-blue-mid: #2d74ac;
+  --fiab-blue-bright: #3788d8;
+  --fiab-blue-tint: #eaedf0;
+  --fiab-green: #aed957;
+  --fiab-green-dark: #6a9a2e;
+  --fiab-gold: #f1c40f;
+  --fiab-orange: #f7a134;
+  --fiab-rose: #ea6485;
+  --fiab-surface: #fbfbfb;
+  --fiab-panel: #e5e8ec;
+  --fiab-code-bg: rgba(241, 196, 15, 0.18);
+  --text: #2c3e50;
+  --muted: #4c5562;
+  --radius: 12px;
+  --font: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--fiab-surface);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.site-header {
+  background: linear-gradient(
+    135deg,
+    var(--fiab-blue-dark) 0%,
+    var(--fiab-blue) 48%,
+    var(--fiab-blue-mid) 78%,
+    var(--fiab-blue-bright) 100%
+  );
+  color: #fff;
+  padding: 1rem 1.25rem 1.1rem;
+  box-shadow: 0 2px 14px rgba(0, 63, 102, 0.28);
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.site-header p {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.92;
+  max-width: 52rem;
+}
+
+.badge-fiab {
+  display: inline-block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fiab-blue-dark);
+  background: var(--fiab-gold);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.45rem;
+  font-weight: 600;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.site-footer {
+  flex-shrink: 0;
+  padding: 0.45rem 1.25rem 0.55rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  background: var(--fiab-panel);
+  border-top: 1px solid rgba(0, 106, 167, 0.12);
+}
+
+.site-footer p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.site-footer a {
+  color: var(--fiab-blue);
+  font-weight: 600;
+}
+
+.site-footer code {
+  font-size: 0.86em;
+  background: var(--fiab-code-bg);
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+}
+
+@media (max-width: 960px) {
+  body {
+    height: auto;
+    max-height: none;
+    overflow: auto;
+    min-height: 100dvh;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(50vh, 55vh);
+    flex: none;
+  }
+}
+
+#map-wrap {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  border-bottom: 1px solid rgba(0, 106, 167, 0.12);
+}
+
+@media (min-width: 961px) {
+  #map-wrap {
+    order: 2;
+    min-height: 0;
+    height: 100%;
+    border-bottom: none;
+    border-left: 1px solid var(--fiab-panel);
+  }
+
+  .article-wrap {
+    order: 1;
+    height: 100%;
+    min-height: 0;
+  }
+}
+
+.map-layers-toggle {
+  position: absolute;
+  z-index: 1100;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 6.5rem;
+  max-width: min(14rem, 52vw);
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(0, 106, 167, 0.28);
+  background: #fff;
+  color: var(--fiab-blue-dark);
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 63, 102, 0.15);
+}
+
+.map-layers-toggle__label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  letter-spacing: 0.01em;
+  color: var(--fiab-blue-dark);
+}
+
+.map-layers-toggle:hover {
+  background: var(--fiab-blue-tint);
+}
+
+.map-layers-toggle:focus-visible {
+  outline: 2px solid var(--fiab-yellow);
+  outline-offset: 2px;
+}
+
+#map-wrap.map-wrap--layers-hidden .leaflet-control-layers {
+  display: none !important;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--fiab-blue-tint);
+}
+
+@media (max-width: 960px) {
+  #map {
+    min-height: 50vh;
+  }
+}
+
+.map-legend-stack {
+  position: absolute;
+  z-index: 1000;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: min(280px, calc(100vw - 24px));
+}
+
+.legend-toggle-btn {
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(0, 106, 167, 0.28);
+  background: #fff;
+  color: var(--fiab-blue-dark);
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 63, 102, 0.15);
+}
+
+.legend-toggle-btn:hover {
+  background: var(--fiab-blue-tint);
+}
+
+.legend-toggle-btn::after {
+  content: " ▼";
+  font-size: 0.65em;
+  opacity: 0.75;
+}
+
+.map-legend-stack.legend-open .legend-toggle-btn::after {
+  content: " ▲";
+}
+
+.map-legend-panel {
+  margin-top: 6px;
+  background: #fff;
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 106, 167, 0.22);
+  max-height: min(52vh, 22rem);
+  overflow-y: auto;
+}
+
+.map-legend-inner {
+  padding: 0.65rem 0.75rem 0.75rem;
+}
+
+.map-legend-inner strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--fiab-blue-dark);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.map-legend-inner span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.map-legend-inner .legend-sub {
+  display: block;
+  margin: 0.5rem 0 0.15rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fiab-muted);
+}
+
+.legend-dot--school-sup {
+  background: #003f66;
+  border: 2px solid #001a28;
+}
+
+.legend-dot--school-comp {
+  background: #7b1fa2;
+  border: 2px solid #311b92;
+}
+
+.legend-dot--school-media {
+  background: #006aa7;
+  border: 2px solid #001f33;
+}
+
+.legend-dot--school-elem {
+  background: #3788d8;
+  border: 2px solid #003f66;
+}
+
+.legend-dot--school-inf {
+  background: #aed957;
+  border: 2px solid #4a7c23;
+}
+
+.legend-dot--school-nc {
+  background: #b0bec5;
+  border: 2px solid #546e7a;
+}
+
+.legend-dot--buffer {
+  background: transparent;
+  border: 2px solid rgba(0, 106, 167, 0.55);
+  width: 14px;
+  height: 14px;
+}
+
+.legend-dot--critical {
+  background: var(--fiab-orange);
+  border: 2px solid #d35400;
+}
+
+.legend-dot--cycle {
+  background: #5a8f2a;
+  border: 2px solid var(--fiab-green-dark);
+}
+
+.legend-dot--ped {
+  background: transparent;
+  border: 2px dashed #6586b4;
+}
+
+.legend-dot--air {
+  background: linear-gradient(135deg, var(--fiab-green) 0%, var(--fiab-gold) 50%, #ea6485 100%);
+  border: 2px solid var(--fiab-blue-dark);
+}
+
+.map-legend-inner .legend-heat-note {
+  display: block;
+  margin-top: 0.45rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--fiab-panel);
+  line-height: 1.35;
+  opacity: 0.92;
+  color: var(--muted);
+}
+
+.article-wrap {
+  overflow: auto;
+  padding: 1.25rem 1.5rem 2rem;
+  max-height: none;
+  min-height: 0;
+}
+
+@media (min-width: 961px) {
+  .article-wrap {
+    max-height: none;
+  }
+}
+
+#content {
+  max-width: 100%;
+  line-height: 1.55;
+  font-size: 0.98rem;
+}
+
+#content h1 {
+  font-size: 1.45rem;
+  color: var(--fiab-blue-dark);
+  margin-top: 0;
+  line-height: 1.25;
+}
+
+#content h2 {
+  font-size: 1.1rem;
+  color: var(--fiab-blue);
+  margin-top: 1.75rem;
+  border-bottom: 3px solid var(--fiab-gold);
+  padding-bottom: 0.25rem;
+}
+
+#content hr {
+  border: none;
+  border-top: 1px solid var(--fiab-panel);
+  margin: 1.5rem 0;
+}
+
+#content p {
+  margin: 0.75rem 0;
+  color: var(--text);
+}
+
+#content ul,
+#content ol {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+#content li {
+  margin: 0.35rem 0;
+}
+
+#content a {
+  color: var(--fiab-blue);
+  text-decoration-thickness: 1px;
+}
+
+#content a:hover {
+  color: var(--fiab-blue-bright);
+}
+
+#content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin: 1rem 0;
+}
+
+#content th,
+#content td {
+  border: 1px solid rgba(0, 106, 167, 0.2);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+#content th {
+  background: var(--fiab-panel);
+  color: var(--fiab-blue-dark);
+}
+
+#content code {
+  font-size: 0.86em;
+  background: var(--fiab-code-bg);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.loading {
+  padding: 2rem;
+  color: var(--muted);
+}
+
+.error-banner {
+  background: #fff3e0;
+  color: #6d3b00;
+  padding: 0.75rem 1rem;
+  margin: 0 1rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  border: 1px solid #e0a060;
+}
+
+.leaflet-container {
+  font-family: var(--font);
+}
+
+/* Heatmap sopra le tile ma non intercetta i clic (sotto i marker nel pane schoolHitMarkers). */
+.leaflet-container .leaflet-heatmap-layer canvas {
+  pointer-events: none !important;
+}
+
+/* Pannello livelli sotto il pulsante toggle Elenco Dati e Mappe. */
+#map .leaflet-top.leaflet-right {
+  top: 58px;
+  right: 12px;
+  left: auto;
+}
+
+#map .leaflet-top.leaflet-right .leaflet-control {
+  margin-top: 0;
+  margin-right: 0;
+}
+
+.leaflet-control-layers {
+  font-size: 0.82rem;
+  max-height: min(70vh, 22rem);
+  overflow-y: auto;
+  border: 1px solid rgba(0, 106, 167, 0.25) !important;
+  border-radius: var(--radius) !important;
+}
+
+.leaflet-control-layers-expanded {
+  padding: 0.5rem 0.65rem !important;
+}
+
+.leaflet-overlay-bulk-toggle-wrap {
+  padding: 0 0 0.45rem;
+  margin: 0 0 0.35rem;
+  border-bottom: 1px solid rgba(0, 63, 102, 0.14);
+}
+
+.leaflet-overlay-bulk-toggle {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.38rem 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(0, 106, 167, 0.28);
+  background: var(--fiab-blue-tint);
+  color: var(--fiab-blue-dark);
+  cursor: pointer;
+}
+
+.leaflet-overlay-bulk-toggle:hover {
+  background: #fff;
+}
+
+.leaflet-overlay-bulk-toggle:focus-visible {
+  outline: 2px solid var(--fiab-yellow);
+  outline-offset: 1px;
+}

@@ -1,0 +1,38 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+================================================================================
+
+SPDX-License-Identifier: CC-BY-4.0
+
+Il materiale originale di questo repository — inclusi, a titolo esemplificativo:
+  • testo e struttura metodologica in content.md;
+  • markup e testi di interfaccia in index.html per questo progetto;
+  • styles.css;
+  • render.js e gli script in scripts/ redatti per il progetto;
+  • README.md e il presente file LICENSE —
+
+è rilasciato sotto licenza Creative Commons Attribuzione 4.0 Internazionale.
+
+Testo integrale della licenza (inglese):
+  https://creativecommons.org/licenses/by/4.0/legalcode
+
+Versione sintetica (deed) in italiano:
+  https://creativecommons.org/licenses/by/4.0/deed.it
+
+Attribuzione suggerita: «Progetto heatmap mobilità sostenibile scolastica — FIAB
+Cosenzaciclabile» e/o il nome del repository e dei contributori.
+
+================================================================================
+
+ALTRI CONTENUTI
+
+• Dati e geometrie derivate da OpenStreetMap: licenza ODbL 1.0, come da fonti
+  del progetto e da openstreetmap.org/copyright .
+
+• Librerie e risorse di terze parti (Leaflet, Marked, Leaflet.heat, tile mappe,
+  font Google Fonts, API Open-Meteo, ecc.): restano alle licenze indicate dai
+  rispettivi autori (vedi content.md, sezione «Fonti, licenze e repository»).
+
+• Marchio e linee guida grafiche FIAB: uso del logo e palette secondo i
+  materiali ufficiali FIAB Italia; questa licenza CC BY non sostituisce le
+  regole sul marchio.
