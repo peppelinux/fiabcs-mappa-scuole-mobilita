@@ -452,27 +452,37 @@
       var p = f.properties || {};
       if (!geom) return;
 
-      if (geom.type === "LineString" && p.kind === "critical_segment") {
-        var latlngs = geom.coordinates.map(function (c) {
-          return [c[1], c[0]];
-        });
-        latlngs.forEach(function (ll) {
-          bounds.extend(ll);
-          heatPoints.push([ll[0], ll[1], 0.35]);
-        });
-        var pl = L.polyline(latlngs, {
-          color: FIAB.orange,
-          weight: 5,
-          opacity: 0.9,
-        });
-        pl.bindPopup(
+      if (p.kind === "critical_segment") {
+        var lines =
+          geom.type === "LineString"
+            ? [geom.coordinates]
+            : geom.type === "MultiLineString"
+              ? geom.coordinates
+              : null;
+        if (!lines) return;
+        var popupHtml =
           "<strong>" +
-            escapeHtml(p.name || "") +
-            "</strong><br/>" +
-            escapeHtml(p.risk || "") +
-            (p.notes ? "<br/><small>" + escapeHtml(p.notes) + "</small>" : "")
-        );
-        criticalGroup.addLayer(pl);
+          escapeHtml(p.name || "") +
+          "</strong><br/>" +
+          escapeHtml(p.risk || "") +
+          (p.notes ? "<br/><small>" + escapeHtml(p.notes) + "</small>" : "");
+        var li;
+        for (li = 0; li < lines.length; li++) {
+          var latlngs = lines[li].map(function (c) {
+            return [c[1], c[0]];
+          });
+          latlngs.forEach(function (ll) {
+            bounds.extend(ll);
+            heatPoints.push([ll[0], ll[1], 0.35]);
+          });
+          var pl = L.polyline(latlngs, {
+            color: FIAB.orange,
+            weight: 5,
+            opacity: 0.9,
+          });
+          pl.bindPopup(popupHtml);
+          criticalGroup.addLayer(pl);
+        }
       }
     });
 

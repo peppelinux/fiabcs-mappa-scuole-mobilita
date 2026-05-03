@@ -42,7 +42,7 @@ Dopo modifiche alla metodologia, aggiornare **`content.md`** (messaggio pubblico
 - **`index.html`** — struttura pagina, legenda, script
 - **`styles.css`** — layout e tema FIAB
 - **`content.md`** — testo per il pubblico (obiettivi, utilità, criteri in sintesi)
-- **`data.geojson`** — LineString itinerario critico (`kind=critical_segment`)
+- **`data.geojson`** — Itinerario critico (`kind=critical_segment`, LineString o MultiLineString)
 - **`vendor/leaflet-heat.js`** — Leaflet.heat con patch Canvas `willReadFrequently`
 
 ---
@@ -87,7 +87,7 @@ I POI **senza nome** in OSM hanno la proprietà **`poi_uid`** (`school-poi-anon-
 
 ### Itinerario critico e layer OSM (`data.geojson`, `data/osm-*.geojson`)
 
-Il file `data.geojson` contiene un **LineString** (*itinerario critico*) che unisce: **asse storico** (**Piazza Maestri del Lavoro**, **Via Pasquale Rossi**, **Viale della Repubblica**, **Via Roma**, bbox stretto Cosenza) e **diramazione Rende** (**Via Riccardo Misasi**, **Piazza Europa**, **Viale Europa**, **Via Panebianco**, **Via John Fitzgerald Kennedy**). Per **Città 2000** sono inclusi esplicitamente **Via Pomponio Leto**, **Via Guglielmo Marconi** (solo `name` che inizia con «Via »), **Via Torino** e **Via Don Minzoni** (filtrati nel bbox nord o vicino al nodo place *Città 2000*). **Esclusi** tutti i way con **SS 107** in `ref` o nel nome e **Via/Viale Giuseppe Garibaldi**. Segmenti uniti a **≤25 m** e fino a **~650 m**; si tiene la **catena più lunga** tra quelle che passano entro **~600 m** dall’ancora storica. Rigenerazione: **`./scripts/update-critical-segments.sh`**.
+Il file `data.geojson` contiene l’**itinerario critico** (LineString o **MultiLineString**): il tracciato segue il **grafo stradale OSM** nel bbox definito in **`config/critical-corridor.json`**; tra i waypoint configurati per ogni «gamba» si calcola il percorso di **costo minimo (algoritmo di Dijkstra)** su archi con peso = lunghezza in metri (nessuna corda arbitraria fuori strada). Vie d’interesse, filtri `highway`, esclusioni (`exclude_ways`: anche regole con **`centroid_lat_gte`** / `centroid_lat_lte` per escludere un toponimo solo in una zona) e waypoint si **modificano solo nel JSON**. Rigenerazione: **`./scripts/update-critical-segments.sh`** (variabile opzionale `CRITICAL_CORRIDOR_CONFIG` per un file di config alternativo).
 
 - **`data/osm-cycleways.geojson`** — piste dedicate, `cycleway`, `bicycle_road` (estratto bbox OSM).
 - **`data/osm-pedestrian.geojson`** — `highway=pedestrian`, attraversamenti `footway=crossing`.
@@ -104,7 +104,7 @@ Per **traffico veicolare** omogeneo a livello locale non c’è oggi un dataset 
 | Carta di base | Tile **OpenStreetMap** | [ODbL 1.0](https://wiki.openstreetmap.org/wiki/OpenStreetMap_License) | [openstreetmap.org](https://www.openstreetmap.org/) |
 | Rete ciclabile e pedonalità | Geometrie OSM, **Overpass** → GeoJSON locale | ODbL | [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API) |
 | Rigenerazione estratti OSM | `scripts/fetch-osm-data.sh` | — | `curl` verso `overpass-api.de` |
-| Itinerario critico | `scripts/update-critical-segments.sh` + `build-critical-corridor-cosenza-axis.py` | ODbL | Way nominati; merge controllato; no SS107 / Garibaldi |
+| Itinerario critico | `config/critical-corridor.json` + `update-critical-segments.sh` | ODbL | Grafo OSM nel bbox; Dijkstra; esclusioni da config |
 | POI scuole | `data/schools-poi.geojson` + `scripts/fetch-schools-poi.sh` | ODbL | Overpass; classificazione in script (non ufficiale MIUR) |
 | Qualità dell’aria | **Open-Meteo** Air Quality API | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | [open-meteo.com](https://open-meteo.com/) |
 | Mappa | **Leaflet** 1.9 | BSD 2-Clause | [Leaflet](https://github.com/Leaflet/Leaflet) |

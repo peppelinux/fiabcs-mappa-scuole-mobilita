@@ -1,0 +1,116 @@
+{
+  "_comment": "forbidden_snap_name_substrings: nodi su way highway con quel testo nei toponimi non usati come snap (insieme ai nodi di exclude_osm_way_ids). exclude_geometry_*: opzionale, può spezzare la rete se usato aggressivo.",
+  "metadata": {
+    "name": "Itinerario critico — centro, Rende, Città 2000",
+    "risk": "Contesto scolastico e flussi urbani: sicurezza e comfort per chi si muove a piedi e in bici (continuità ciclopedonale, velocità, attraversamenti, qualità dell’ambiente stradale) da analizzare tratto per tratto.",
+    "note": "Itinerario critico: Dijkstra su grafo stradale (carreggiata / assi urbani), non su piste ciclabili dedicate: il builder esclude sempre cycleway, bicycle_road e path con bicycle=designated|official, oltre alla regex in routing. Assi: Via Pasquale Rossi, Viale della Repubblica, Via Riccardo Misasi, Via Panebianco, Via Pomponio Leto, … Esclusioni: routing.exclude_ways. Scuole: data/schools-poi.geojson.",
+    "osm_filter": "routing_graph+dijkstra",
+    "critical_segments_source_template": "OpenStreetMap: grafo nel bbox (senza piste ciclabili dedicate), percorso {algorithm} tra waypoint; semplificazione ≥{simplify_m} m. ODbL."
+  },
+  "routing": {
+    "overpass_url": "https://overpass-api.de/api/interpreter",
+    "bbox": { "south": 39.25, "west": 16.14, "north": 39.42, "east": 16.34 },
+    "timeout_s": 240,
+    "highway_allow_regex": "^(primary|secondary|tertiary|unclassified|residential|living_street|pedestrian|trunk|trunk_link|primary_link|secondary_link|tertiary_link|road)$",
+    "respect_oneway": false,
+    "exclude_osm_way_ids": [120834711, 120834718, 42219371, 42219372],
+    "exclude_osm_way_geometry_buffer_m": 0,
+    "exclude_geometry_near_names": [],
+    "forbidden_snap_name_substrings": [
+      "formoso",
+      "giuseppe montana",
+      "magna grecia",
+      "magna graecia",
+      "magnagraecia"
+    ],
+    "exclude_ways": [
+      { "ref_contains": "SS107" },
+      { "name_contains_all": ["garibaldi", "giuseppe"] },
+      { "name_contains": "ss107" },
+      { "name_contains_all": ["silana", "107"] },
+      { "name_contains_all": ["crotonese", "107"] },
+      { "name_contains": "viale europa" },
+      { "name_contains": "ruffolo" },
+      { "name_contains": "magna grecia" },
+      { "name_contains": "magna graecia" },
+      { "name_contains_all": ["magna", "grecia"] },
+      { "name_contains_all": ["magna", "graecia"] },
+      { "name_contains": "formoso" },
+      { "name_contains": "giuseppe montana" },
+      { "name_contains_all": ["giuseppe", "montana"] },
+      { "name_contains": "veterani dello sport" },
+      { "name_contains": "rebecchi" },
+      { "name_contains_all": ["traversa", "giordano"] },
+      { "name_contains_all": ["ludovico", "ariosto"] },
+      { "name_contains_all": ["federico", "fellini"] },
+      { "name_contains": "molicella" },
+      { "name_contains": "botticelli" },
+      {
+        "name_contains_all": ["viale", "guglielmo marconi"],
+        "centroid_lat_gte": 39.324
+      }
+    ]
+  },
+  "route": {
+    "algorithm": "dijkstra",
+    "max_snap_m": 220,
+    "simplify_min_vertex_spacing_m": 6
+  },
+  "legs": [
+    {
+      "id": "centro",
+      "waypoints": [
+        { "lon": 16.2479375, "lat": 39.3026671, "label": "Via Pasquale Rossi — sud (OSM)" },
+        { "lon": 16.2477887, "lat": 39.3030129, "label": "Via Pasquale Rossi (OSM)" },
+        { "lon": 16.2461693, "lat": 39.3045192, "label": "Via Pasquale Rossi — tratto centrale (OSM)" },
+        { "lon": 16.2451137, "lat": 39.3051942, "label": "Via Pasquale Rossi (OSM)" },
+        { "lon": 16.2451, "lat": 39.3055, "label": "Piazza Maestri del Lavoro" },
+        { "lon": 16.2454114, "lat": 39.3056199, "label": "Via Pasquale Rossi (OSM)" },
+        { "lon": 16.2455945, "lat": 39.3068072, "label": "Via Pasquale Rossi (OSM)" },
+        { "lon": 16.2456961, "lat": 39.3070346, "label": "Via Pasquale Rossi — nord (OSM)" },
+        { "lon": 16.2477527, "lat": 39.2925399, "label": "Viale della Repubblica — estremo sud (OSM)" },
+        { "lon": 16.2476516, "lat": 39.292711, "label": "Viale della Repubblica (OSM)" },
+        { "lon": 16.24741, "lat": 39.2954419, "label": "Viale della Repubblica (OSM)" },
+        { "lon": 16.2473534, "lat": 39.2985579, "label": "Viale della Repubblica (OSM)" },
+        { "lon": 16.2477341, "lat": 39.301371, "label": "Viale della Repubblica (OSM)" },
+        { "lon": 16.2479565, "lat": 39.3029279, "label": "Viale della Repubblica (OSM)" },
+        { "lon": 16.247968, "lat": 39.303535, "label": "Viale della Repubblica — innesto (OSM)" },
+        { "lon": 16.247952, "lat": 39.304615, "label": "Viale della Repubblica — centrale (OSM)" },
+        { "lon": 16.247928, "lat": 39.305571, "label": "Viale della Repubblica (OSM)" },
+        { "lon": 16.2479068, "lat": 39.3064269, "label": "Viale della Repubblica — nord (OSM)" }
+      ]
+    },
+    {
+      "id": "rende",
+      "waypoints": [
+        { "lon": 16.250481, "lat": 39.294716, "label": "Via Riccardo Misasi — sud (OSM)" },
+        { "lon": 16.249726, "lat": 39.296454, "label": "Via Riccardo Misasi (OSM)" },
+        { "lon": 16.249804, "lat": 39.298533, "label": "Via Riccardo Misasi — tratto centrale (OSM)" },
+        { "lon": 16.249929, "lat": 39.301975, "label": "Via Riccardo Misasi — verso campus (OSM)" },
+        { "lon": 16.250036, "lat": 39.304703, "label": "Via Riccardo Misasi — nord (OSM)" },
+        { "lon": 16.2355, "lat": 39.312, "label": "Campus Rende (senza Viale Europa)" },
+        { "lon": 16.2475681, "lat": 39.3071652, "label": "Via Panebianco — estremo sud (OSM)" },
+        { "lon": 16.247144, "lat": 39.309404, "label": "Via Panebianco — sud (OSM)" },
+        { "lon": 16.2470027, "lat": 39.3103352, "label": "Via Panebianco (OSM)" },
+        { "lon": 16.2464748, "lat": 39.312862, "label": "Via Panebianco (OSM)" },
+        { "lon": 16.2461143, "lat": 39.3147347, "label": "Via Panebianco (OSM)" },
+        { "lon": 16.2460841, "lat": 39.3154638, "label": "Via Panebianco — centrale (OSM)" },
+        { "lon": 16.2456926, "lat": 39.3177165, "label": "Via Panebianco (OSM)" },
+        { "lon": 16.245352, "lat": 39.3194242, "label": "Via Panebianco (OSM)" },
+        { "lon": 16.2446532, "lat": 39.3236285, "label": "Via Panebianco — nord (OSM)" },
+        { "lon": 16.2438, "lat": 39.3345, "label": "Via John Fitzgerald Kennedy — nord" }
+      ]
+    },
+    {
+      "id": "citta2000",
+      "waypoints": [
+        { "lon": 16.2456961, "lat": 39.3070346, "label": "Via Pomponio Leto — sud (OSM)" },
+        { "lon": 16.2456295, "lat": 39.3079652, "label": "Via Pomponio Leto (OSM)" },
+        { "lon": 16.2458449, "lat": 39.3086425, "label": "Via Pomponio Leto — tratto centrale (OSM)" },
+        { "lon": 16.2457963, "lat": 39.3091406, "label": "Via Pomponio Leto — nord (OSM)" },
+        { "lon": 16.2442, "lat": 39.3148, "label": "Guglielmo Marconi (Cosenza / Città 2000)" },
+        { "lon": 16.2465, "lat": 39.3185, "label": "Via Torino / Don Minzoni" }
+      ]
+    }
+  ]
+}
