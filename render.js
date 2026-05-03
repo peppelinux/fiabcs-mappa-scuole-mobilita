@@ -1,6 +1,5 @@
 /**
- * Carica content.md, data.geojson (asse prioritario mobilità sostenibile), schools-poi (scuole OSM),
- * layer OSM lineari, Open-Meteo. Avvio: vedi README.md.
+ * Carica content.md, GeoJSON (itinerario critico, scuole, ciclo/ped), Open-Meteo. Avvio: README.md.
  */
 (function () {
   "use strict";
@@ -23,7 +22,7 @@
     { id: "media", overlay: "Scuole: I grado (media)" },
     { id: "elementare", overlay: "Scuole: primaria (elementare)" },
     { id: "infanzia", overlay: "Scuole: infanzia / asilo" },
-    { id: "non_classificata", overlay: "Scuole: non classificate (OSM)" },
+    { id: "non_classificata", overlay: "Scuole: tipo non ancora indicato" },
   ];
 
   var SCHOOL_POINT_STYLE = {
@@ -40,9 +39,9 @@
   var PANE_AIR_MARKERS = "airQualityMarkers";
 
   var AIR_POINTS = [
-    { lat: 39.2989, lon: 16.2538, label: "Cosenza (griglia modello)" },
-    { lat: 39.3315, lon: 16.2412, label: "Rende (griglia modello)" },
-    { lat: 39.355, lon: 16.225, label: "Arcavacata / campus (griglia modello)" },
+    { lat: 39.2989, lon: 16.2538, label: "Cosenza" },
+    { lat: 39.3315, lon: 16.2412, label: "Rende" },
+    { lat: 39.355, lon: 16.225, label: "Arcavacata / campus" },
   ];
 
   function showFetchError(msg) {
@@ -187,7 +186,7 @@
             "<strong>" +
             escapeHtml(pt.label) +
             "</strong><br/>" +
-            "<small>Open-Meteo · griglia ~11 km · modello, non stazione al suolo</small><br/>" +
+            "<small>Stima da modello (Open-Meteo), non misura diretta sul posto</small><br/>" +
             "<strong>Indice EAQI (europeo):</strong> " +
             escapeHtml(String(aqi != null ? aqi : "n/d")) +
             " — <strong>" +
@@ -219,30 +218,37 @@
     });
   }
 
+  var OSM_POPUP_LABEL = {
+    highway: "Tipo strada",
+    name: "Nome",
+    cycleway: "Corsia ciclabile",
+    footway: "Percorso pedonale",
+    bicycle: "Accesso in bici",
+    surface: "Superficie",
+    maxspeed: "Velocità massima",
+  };
+
   function osmLinePopup(props) {
     var keys = ["highway", "name", "cycleway", "footway", "bicycle", "surface", "maxspeed"];
     var parts = [];
     keys.forEach(function (k) {
-      if (props[k]) parts.push("<strong>" + escapeHtml(k) + "</strong>: " + escapeHtml(props[k]));
+      if (props[k])
+        parts.push(
+          "<strong>" + escapeHtml(OSM_POPUP_LABEL[k] || k) + "</strong>: " + escapeHtml(props[k])
+        );
     });
     if (props.osm_way_id)
       parts.push(
-        '<small>OSM way <a href="https://www.openstreetmap.org/way/' +
+        '<small><a href="https://www.openstreetmap.org/way/' +
           encodeURIComponent(String(props.osm_way_id)) +
-          '" target="_blank" rel="noopener">' +
-          escapeHtml(String(props.osm_way_id)) +
-          "</a></small>"
+          '" target="_blank" rel="noopener">Apri questo tratto su OpenStreetMap</a></small>'
       );
-    return parts.length ? parts.join("<br/>") : "OSM";
+    return parts.length ? parts.join("<br/>") : "Dettaglio non disponibile.";
   }
 
   function schoolPoiPopup(p) {
     var lines = [];
     lines.push("<strong>" + escapeHtml(p.name || "Senza nome") + "</strong>");
-    if (p.poi_uid)
-      lines.push(
-        '<small style="font-family:monospace">uid: ' + escapeHtml(p.poi_uid) + "</small>"
-      );
     if (p.category_label)
       lines.push("<span style=\"opacity:.85\">" + escapeHtml(p.category_label) + "</span>");
     var street = [p["addr:street"], p["addr:housenumber"]].filter(Boolean).join(" ");
@@ -314,8 +320,8 @@
     osmStandard.addTo(map);
 
     var baseMaps = {
-      "OpenStreetMap Standard": osmStandard,
-      "Satellite (Esri World Imagery)": esriSat,
+      "Carta stradale (OpenStreetMap)": osmStandard,
+      "Vista satellite": esriSat,
     };
 
     var FIAB = {
@@ -557,11 +563,11 @@
       var g = schoolGroups[item.id];
       if (g && g.getLayers().length) overlays[item.overlay] = g;
     });
-    overlays["Asse prioritario (mobilità sostenibile)"] = criticalGroup;
-    overlays["Piste / corsie ciclabili (OSM)"] = cycleGroup;
-    overlays["Pedonalità e attraversamenti (OSM)"] = pedestrianGroup;
-    overlays["Qualità aria (Open-Meteo)"] = airGroup;
-    if (heatLayer) overlays["Heatmap intensità (demo)"] = heatLayer;
+    overlays["Itinerario critico"] = criticalGroup;
+    overlays["Piste e corsie ciclabili"] = cycleGroup;
+    overlays["Percorsi pedonali e attraversamenti"] = pedestrianGroup;
+    overlays["Qualità dell’aria (stima modello)"] = airGroup;
+    if (heatLayer) overlays["Priorità geografiche (heatmap)"] = heatLayer;
 
     var layersControl = L.control
       .layers(baseMaps, overlays, { collapsed: false, position: "topright" })
@@ -621,8 +627,8 @@
         var on = allEnabledOverlaysOn();
         bulkBtn.textContent = on ? "Deseleziona tutte" : "Seleziona tutte";
         bulkBtn.title = on
-          ? "Nascondi tutti gli overlay (scuole, asse prioritario mobilità, ciclo, pedonalità, aria, heatmap)"
-          : "Mostra tutti gli overlay disponibili nel pannello";
+          ? "Nascondi tutti i livelli (scuole, itinerario critico, piste, pedonalità, aria, heatmap)"
+          : "Mostra tutti i livelli disponibili nel pannello";
         bulkBtn.setAttribute("aria-pressed", on ? "true" : "false");
       }
 
@@ -648,17 +654,17 @@
         if (hidden) {
           btn.setAttribute(
             "aria-label",
-            "Mostra di nuovo Elenco Dati e Mappe: basemap, scuole, asse prioritario, rete ciclabile, pedonalità, aria e heatmap"
+            "Apri Elenco Dati e Mappe: tipo di carta, scuole, itinerario critico, piste, pedonalità, aria e heatmap"
           );
           btn.title =
-            "Espandi il riquadro Elenco Dati e Mappe (basemap, scuole, tratto prioritario, ciclo, pedonalità, qualità aria, heatmap)";
+            "Apri il riquadro Elenco Dati e Mappe (tipo di carta, scuole, itinerario critico, piste, pedonalità, aria, priorità geografiche)";
         } else {
           btn.setAttribute(
             "aria-label",
-            "Comprimi Elenco Dati e Mappe: basemap, scuole, percorsi e altri livelli sulla mappa"
+            "Comprimi il riquadro con tipo di carta, scuole, percorsi e altri livelli"
           );
           btn.title =
-            "Comprimi il riquadro Elenco Dati e Mappe (basemap, scuole, asse prioritario, ciclo, pedonalità, aria, heatmap)";
+            "Comprimi il riquadro Elenco Dati e Mappe (tipo di carta, scuole, itinerario critico, piste, pedonalità, aria, priorità geografiche)";
         }
       }
       btn.addEventListener("click", function () {
@@ -668,7 +674,10 @@
           map.invalidateSize();
         }, 0);
       });
-      syncUi(false);
+      syncUi(wrap.classList.contains("map-wrap--layers-hidden"));
+      setTimeout(function () {
+        map.invalidateSize();
+      }, 0);
     })();
 
     (function setupLegendToggle() {

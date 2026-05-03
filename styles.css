@@ -58,6 +58,45 @@ body {
   box-shadow: 0 2px 14px rgba(0, 63, 102, 0.28);
 }
 
+.site-header__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+.site-header__logo-link {
+  flex-shrink: 0;
+  line-height: 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.site-header__logo-link:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+}
+
+.site-header__logo-link:focus-visible {
+  outline: 2px solid var(--fiab-gold);
+  outline-offset: 2px;
+}
+
+.site-header__logo {
+  display: block;
+  width: auto;
+  max-width: min(7.35rem, 40vw);
+  height: auto;
+  object-fit: contain;
+}
+
+.site-header__text {
+  min-width: 0;
+  flex: 1;
+  max-width: 52rem;
+}
+
 .site-header h1 {
   margin: 0;
   font-size: 1.35rem;
@@ -69,7 +108,6 @@ body {
   margin: 0.35rem 0 0;
   font-size: 0.9rem;
   opacity: 0.92;
-  max-width: 52rem;
 }
 
 .badge-fiab {
@@ -120,7 +158,15 @@ body {
   border-radius: 3px;
 }
 
+.mobile-map-shortcut {
+  display: none;
+}
+
 @media (max-width: 960px) {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     height: auto;
     max-height: none;
@@ -128,10 +174,57 @@ body {
     min-height: 100dvh;
   }
 
+  .site-header__logo {
+    max-width: min(7.35rem, 42vw);
+  }
+
+  .mobile-map-shortcut {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0.55rem 1rem;
+    font-family: var(--font);
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--fiab-blue-dark);
+    background: var(--fiab-gold);
+    border-bottom: 1px solid rgba(0, 63, 102, 0.18);
+    box-shadow: 0 2px 8px rgba(0, 63, 102, 0.12);
+  }
+
+  .mobile-map-shortcut::after {
+    content: "→";
+    font-size: 1.05em;
+    opacity: 0.85;
+  }
+
+  .mobile-map-shortcut:hover {
+    background: #f5d04a;
+    color: #002a45;
+  }
+
+  .mobile-map-shortcut:focus-visible {
+    outline: 2px solid var(--fiab-blue);
+    outline-offset: -2px;
+  }
+
+  #map-wrap {
+    scroll-margin-top: 0.35rem;
+  }
+
   .layout {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(50vh, 55vh);
     flex: none;
+  }
+}
+
+@media (max-width: 960px) and (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 

@@ -3,9 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Heatmap mobilità sostenibile scolastica — FIAB Cosenzaciclabile · Cosenza, Rende, Andreotta</title>
-    <link rel="icon" href="favicon.ico" sizes="any" />
+    <title>Scuole e città: dove rendere più sicura la mobilità — FIAB Cosenzaciclabile</title>
+    <link rel="icon" href="favicon.ico" sizes="64x64 48x48 32x32 16x16" />
+    <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -22,28 +24,51 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="badge-fiab">FIAB Cosenzaciclabile</div>
-      <h1>Heatmap mobilità sostenibile nei 300 m dalle scuole</h1>
-      <!-- <p>
-        Cosenza, Rende, Andreotta — OpenStreetMap, buffer 300 m, priorità sui tratti in cui la
-        <strong>mobilità sostenibile</strong> (spostamenti sicuri a piedi e in bici, comfort e contesto
-        urbano) risulta <strong>non adeguata</strong> nei pressi delle scuole.
-      </p> -->
+      <div class="site-header__top">
+        <div class="site-header__text">
+          <div class="badge-fiab">FIAB Cosenzaciclabile</div>
+          <h1>Una mappa per famiglie, scuole e territorio</h1>
+          <p>
+            Qui sono indicate le <strong>scuole</strong> di <strong>Cosenza</strong>, <strong>Rende</strong> e
+            <strong>Andreotta</strong> e l’area intorno a ciascuna (circa <strong>300 metri</strong>) serve a
+            capire dove è più difficile andare <strong>a piedi o in bici</strong> in modo sicuro, dove
+            l’<strong>aria</strong> peggiora nelle ore di entrata e uscita, e dove si propone di
+            <strong>agire con proposte di mobilità sostenibile e sopratutto sicure</strong>.
+          </p>
+        </div>
+        <a
+          class="site-header__logo-link"
+          href="https://www.facebook.com/cosenzaciclabile/?locale=it_IT"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="FIAB Cosenza Ciclabile — pagina Facebook (si apre in una nuova scheda)"
+        >
+          <img
+            class="site-header__logo"
+            src="assets/logo-cosenzaciclabile.png"
+            width="120"
+            height="120"
+            alt=""
+            decoding="async"
+          />
+        </a>
+      </div>
     </header>
+    <a class="mobile-map-shortcut" href="#map-wrap">Vai alla mappa</a>
     <div id="fetch-error" class="error-banner" hidden></div>
     <div class="layout">
       <div class="article-wrap">
         <article id="content" class="loading">Caricamento contenuto…</article>
       </div>
-      <div id="map-wrap">
-        <div id="map" role="application" aria-label="Mappa interattiva"></div>
+      <div id="map-wrap" class="map-wrap--layers-hidden">
+        <div id="map" role="application" aria-label="Mappa di scuole, percorsi e priorità per la mobilità"></div>
         <button
           type="button"
           id="layers-panel-toggle"
           class="map-layers-toggle"
-          aria-pressed="true"
-          aria-label="Comprimi Elenco Dati e Mappe: basemap, scuole, percorsi e altri livelli sulla mappa"
-          title="Comprimi il riquadro Elenco Dati e Mappe (basemap, scuole, asse prioritario, ciclo, pedonalità, aria, heatmap)"
+          aria-pressed="false"
+          aria-label="Apri Elenco Dati e Mappe: tipo di carta, scuole, itinerario critico, piste, pedonalità, aria e heatmap"
+          title="Apri il riquadro Elenco Dati e Mappe (tipo di carta, scuole, itinerario critico, piste, pedonalità, aria, priorità geografiche)"
         >
           <span class="map-layers-toggle__label">Elenco Dati e Mappe</span>
         </button>
@@ -61,12 +86,12 @@
             id="map-legend-panel"
             class="map-legend-panel"
             role="region"
-            aria-label="Legenda simboli"
+            aria-label="Legenda della mappa"
             hidden
           >
             <div class="map-legend-inner">
               <strong>Legenda</strong>
-              <span class="legend-sub">Scuole (OSM, per categoria)</span>
+              <span class="legend-sub">Scuole (per ordine di scuola)</span>
               <span
                 ><i class="dot legend-dot legend-dot--school-sup" aria-hidden="true"></i> II grado
                 (superiori)</span
@@ -92,32 +117,32 @@
                 classificata</span
               >
               <span
-                ><i class="dot legend-dot legend-dot--buffer" aria-hidden="true"></i> Buffer 300 m
-                (intorno a ogni POI)</span
+                ><i class="dot legend-dot legend-dot--buffer" aria-hidden="true"></i> Area di attenzione
+                300 m intorno a ogni scuola</span
               >
               <span
-                ><i class="dot legend-dot legend-dot--critical" aria-hidden="true"></i> Asse prioritario
-                (mobilità sostenibile non adeguata)</span
+                ><i class="dot legend-dot legend-dot--critical" aria-hidden="true"></i> Itinerario critico
+                — vie che il gruppo invita ad analizzare</span
               >
               <span
-                ><i class="dot legend-dot legend-dot--cycle" aria-hidden="true"></i> Piste / corsie
-                (OSM)</span
+                ><i class="dot legend-dot legend-dot--cycle" aria-hidden="true"></i> Piste e corsie
+                ciclabili (mappa collaborativa aperta)</span
               >
               <span
-                ><i class="dot legend-dot legend-dot--ped" aria-hidden="true"></i> Pedonalità /
-                attraversamenti (OSM)</span
+                ><i class="dot legend-dot legend-dot--ped" aria-hidden="true"></i> Percorsi pedonali e
+                attraversamenti (mappa collaborativa aperta)</span
               >
               <span
-                ><i class="dot legend-dot legend-dot--air" aria-hidden="true"></i> Aria (Open-Meteo:
-                colore = EAQI; apri il marker per indice e «l’aria è buona?»)</span
+                ><i class="dot legend-dot legend-dot--air" aria-hidden="true"></i> Qualità dell’aria
+                (stima da modello; apri il punto per l’indice e «l’aria è buona?»)</span
               >
               <small class="legend-heat-note"
-                ><strong>Heatmap — scopo:</strong> evidenzia dove è <strong>urgente</strong> sensibilizzare e
-                promuovere la <strong>mobilità sostenibile</strong>; colori più caldi (più scuole vicine e
-                buffer sovrapposti) richiamano <strong>rischi e insostenibilità</strong> con
-                <strong>elevate concentrazioni di persone e veicoli urbani</strong> nelle
-                <strong>fasce orarie critiche</strong>. Non è un dato strumentale di traffico.
-                <br />Pannello <strong>Livelli dati</strong> in alto a destra: basemap e overlay.</small
+                ><strong>Priorità geografiche (heatmap):</strong> sintetizza dove sono vicine più sedi
+                scolastiche e dove i buffer da 300 m si avvicinano, con un contributo lungo l’itinerario
+                critico — non è traffico misurato sul campo.
+                <br />Come si calcola e perché supporta le valutazioni: sezione <strong>Metodologia della
+                heatmap</strong> nel testo accanto; parametri nel codice e fonti nel <strong>README</strong>.
+                In alto a destra: <strong>Elenco Dati e Mappe</strong>.</small
               >
             </div>
           </div>
@@ -126,14 +151,15 @@
     </div>
     <footer class="site-footer">
       <p>
-        Materiale originale del progetto:
+        Iniziativa <strong>FIAB Cosenzaciclabile</strong> — materiale originale in
         <a
           href="https://creativecommons.org/licenses/by/4.0/deed.it"
           rel="license noopener noreferrer"
           target="_blank"
-          >Creative Commons Attribuzione 4.0 (CC BY 4.0)</a
+          >CC BY 4.0</a
         >
-        — dettagli nel file <code>LICENSE</code>. Dati OSM: ODbL. Librerie esterne: licenze proprie.
+        (<code>LICENSE</code>). Per metodologia, elenco fonti e aspetti tecnici vedere il file
+        <a href="README.md"><code>README.md</code></a> nel repository.
       </p>
     </footer>
     <script
