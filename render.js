@@ -310,6 +310,82 @@
     );
   }
 
+  function reverseGeocodePhoton(lat, lng) {
+    var url =
+      "https://photon.komoot.io/reverse?lat=" +
+      encodeURIComponent(lat) +
+      "&lon=" +
+      encodeURIComponent(lng);
+    return fetch(url, { headers: { Accept: "application/json" } })
+      .then(function (r) {
+        if (!r.ok) throw new Error("photon " + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        var f = data && data.features && data.features[0];
+        if (!f || !f.properties) return null;
+        return f.properties;
+      });
+  }
+
+  function streetNameFromPhotonProps(p) {
+    if (!p) return "";
+    var st = (p.street || "").trim();
+    if (st) return st;
+    if (p.osm_key === "highway" && p.name) return String(p.name).trim();
+    if (p.type === "street" || p.type === "house") return (p.name || "").trim();
+    return (p.name || "").trim();
+  }
+
+  /** Blocco HTML strada / città / comune da proprietà Photon (OSM). */
+  function addressLinesHtmlFromPhotonProps(p) {
+    if (!p) {
+      return "<p><em>Indirizzo non trovato.</em></p>";
+    }
+    var street = streetNameFromPhotonProps(p);
+    var comune = (p.city || p.town || p.village || "").trim();
+    var district = (p.district || p.locality || "").trim();
+    var cittaDisplay = district || comune;
+    var out = [];
+    out.push(
+      "<div><strong>Strada:</strong> " +
+        (street ? escapeHtml(street) : "<span>—</span>") +
+        "</div>"
+    );
+    if (district && comune && district !== comune) {
+      out.push(
+        "<div><strong>Città:</strong> " + escapeHtml(district) + "</div>",
+        "<div><strong>Comune:</strong> " + escapeHtml(comune) + "</div>"
+      );
+    } else {
+      out.push(
+        "<div><strong>Città:</strong> " +
+          (comune ? escapeHtml(comune) : "<span>—</span>") +
+          "</div>",
+        "<div><strong>Comune:</strong> " +
+          (comune ? escapeHtml(comune) : "<span>—</span>") +
+          "</div>"
+      );
+    }
+    return '<div class="map-popup-address">' + out.join("") + "</div>";
+  }
+
+  function mapClickPopupHtml(latlng, photonProps, phase) {
+    var head = "<strong>Punto sulla mappa</strong>";
+    var addr = "";
+    if (phase === "loading") {
+      addr = "<p><em>Caricamento indirizzo…</em></p>";
+    } else if (phase === "addrfail") {
+      addr = "<p><em>Indirizzo non disponibile.</em></p>";
+    } else {
+      addr = addressLinesHtmlFromPhotonProps(photonProps);
+    }
+    var coords = mapPointCoordsAndStreetViewHtml(latlng.lat, latlng.lng);
+    var attr =
+      '<small class="map-popup-photon-attrib">Dati indirizzo: <a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> / OpenStreetMap.</small>';
+    return head + addr + "<br/>" + coords + "<br/>" + attr;
+  }
+
   function initMap(geo, osmCycle, osmPed, schoolsPoi) {
     var mapEl = document.getElementById(MAP_ID);
     if (!mapEl || typeof L === "undefined") {
@@ -636,10 +712,23 @@
       mapRoot.addEventListener("mousemove", onRootMouseMove);
       mapRoot.addEventListener("mouseleave", onRootMouseLeave);
       map.on("click", function (e) {
-        var html =
-          "<strong>Punto sulla mappa</strong><br/>" +
-          mapPointCoordsAndStreetViewHtml(e.latlng.lat, e.latlng.lng);
-        L.popup().setLatLng(e.latlng).setContent(html).openOn(map);
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+        var popup = L.popup()
+          .setLatLng(e.latlng)
+          .setContent(mapClickPopupHtml(e.latlng, null, "loading"))
+          .openOn(map);
+        reverseGeocodePhoton(lat, lng)
+          .then(function (props) {
+            if (!popup || !map.hasLayer(popup)) return;
+            popup.setContent(
+              mapClickPopupHtml(e.latlng, props, props ? "loaded" : "addrfail")
+            );
+          })
+          .catch(function () {
+            if (!popup || !map.hasLayer(popup)) return;
+            popup.setContent(mapClickPopupHtml(e.latlng, null, "addrfail"));
+          });
       });
     })();
 
@@ -755,16 +844,19 @@
       var panel = document.getElementById("map-legend-panel");
       var stack = btn && btn.closest ? btn.closest(".map-legend-stack") : null;
       if (!btn || !panel || !stack) return;
+      var legendLabel = btn.querySelector(".legend-toggle-btn__label");
       function setOpen(open) {
         if (open) {
           panel.removeAttribute("hidden");
           btn.setAttribute("aria-expanded", "true");
-          btn.textContent = "Nascondi legenda";
+          if (legendLabel) legendLabel.textContent = "Nascondi legenda";
+          else btn.textContent = "Nascondi legenda";
           stack.classList.add("legend-open");
         } else {
           panel.setAttribute("hidden", "");
           btn.setAttribute("aria-expanded", "false");
-          btn.textContent = "Mostra legenda";
+          if (legendLabel) legendLabel.textContent = "Mostra legenda";
+          else btn.textContent = "Mostra legenda";
           stack.classList.remove("legend-open");
         }
       }
