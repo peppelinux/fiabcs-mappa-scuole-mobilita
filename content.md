@@ -6,34 +6,32 @@ L’obiettivo è **valorizzare un’iniziativa di mappatura partecipativa**, dar
 
 ## Perché partire da dati condivisibili
 
-Le decisioni sul territorio meritano basi che **tutti possano controllare**: cosa c’è oggi in strada, dove manca continuità tra marciapiedi e piste, dove l’esposizione all’inquinamento è più critica nelle ore di entrata e uscita. In questo progetto usiamo **dati aperti** (mappa collaborativa, modelli orientativi) così **famiglie e scuole** possono portare elementi concreti al tavolo e **enti locali** possono orientare risorse e comunicazione con trasparenza.
+Le decisioni sul territorio meritano basi che **tutti possano controllare**: cosa c’è oggi in strada, dove manca continuità tra marciapiedi e piste, dove l’esposizione all’inquinamento è più critica nelle ore di entrata e uscita. In questo progetto usiamo **dati aperti** (mappa collaborativa, modelli orientativi) così **famiglie e scuole** possono portare elementi concreti al tavolo e gli **enti locali** possono orientare risorse e comunicazione con trasparenza.
 
-Questa pagina **non sostituisce** conteggi ufficiali di traffico, piani viari o rilievi ARPA ma **integra** il dibattito con una visione geografica chiara.
+Questa pagina **non sostituisce** conteggi ufficiali di traffico, piani viari o rilievi ARPA ma **integra** il dibattito con una visione geografica nota ai cittadini.
 
 ---
 
 ## Cosa puoi fare qui
 
 - **Esplorare** le sedi scolastiche e un’area di attenzione di **300 metri** intorno a ciascuna: distanze tipiche a piedi o in bicicletta, coerenti con la letteratura su esposizione al traffico vicino alle scuole.
-- **Confrontare** la **mappa delle priorità** (i colori “caldi” sulla mappa) con piste, pedonalità e **itinerario critico**: aiuta a **vedere dove concentrare** ascolto, progettazione e dialogo — **non** è traffico misurato sul campo (in sintesi sotto; il dettaglio numerico per chi sviluppa o verifica è nel **[README](README.md)** del repository).
+- **Confrontare** la **mappa delle priorità** (i colori “caldi” sulla mappa) con piste, pedonalità e **itinerario critico** per **individuare dove concentrare** ascolto, progettazione e dialogo.
 - **Leggere** indicatori di **qualità dell’aria** da modello (tre punti di riferimento): utili come **segnale orientativo**, da affiancare dove possibile a dati di stazione.
 
-Il pannello **«Elenco Dati e Mappe»** in alto a destra sulla mappa consente di scegliere **tipo di carta** e **livelli** da sovrapporre.
+Il pannello **«Elenco Dati e Mappe»** in alto a destra sulla mappa consente di scegliere **tipo di mappa** e **livelli** da sovrapporre.
 
 ---
 
 ## Mappa delle priorità (colori “caldi” sulla mappa)
 
-La domanda che questa visualizzazione prova a rispondere è semplice: **dove ci sono molte scuole vicine tra loro** (e i rispettivi “intorni” da **300 metri** che già vedi come cerchi sulla mappa), così da suggerire **dove vale la pena concentrare** ascolto, progetti e confronto sul territorio.
+La domanda che questa visualizzazione prova a rispondere è semplice: **dove ci sono molte scuole vicine tra loro**, così da suggerire iniziative di miglioramento.
 
-**Cosa non è:** non misura il traffico in tempo reale, né la qualità dell’aria al suolo, né dice da sola se un punto è “pericoloso”. I colori più accesi indicano soprattutto **vicinanza e densità** di contesti scolastici nello spazio.
-
-**Cosa c’è dietro, in parole povere**
+**Cosa non è:** non misura il traffico in tempo reale, né la qualità dell’aria al suolo, né dice da sola se un punto è “pericoloso”. I colori più accesi indicano soprattutto **vicinanza e densità** di contesti scolastici nello spazio urbano.
 
 - Ogni **sede** conta, con lo stesso raggio di **300 m** che usi già per leggere la mappa.
 - Se **altre scuole** sono abbastanza vicine (fino a circa **il doppio** di quel raggio, quindi fino a **600 m**), il colore si **intensifica**: più plessi vicini, più la zona tende al caldo.
 - Tra due scuole vicine viene valorizzato anche lo **spazio in mezzo**: così emergono “corridoi” dove la domanda di mobilità non è solo su un edificio isolato.
-- La **linea arancione** dell’itinerario critico dà un **contributo costante** lungo il percorso, così la mappa collega le priorità che il gruppo segnala con la geografia delle scuole.
+- La **linea arancione** dell’itinerario critico dà un **contributo costante** lungo il percorso, così la mappa collega le priorità che stiamo segnalando con la geografia delle scuole.
 - I colori si **sfumano** tra un punto e l’altro: è normale che le zone calde sembrino “macchie” morbide — aiuta l’occhio, ma non va letto come una misura al metro.
 
 Per **chi vuole riprodurre o verificare** i numeri esatti, i nomi dei file, la libreria che disegna il calore e come viene costruito l’itinerario critico su OpenStreetMap, tutto è nel **[README](README.md)** del repository (sezione sulla heatmap e sugli script).
