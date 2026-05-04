@@ -38,6 +38,8 @@
   var PANE_SCHOOL_MARKERS = "schoolHitMarkers";
   var PANE_AIR_MARKERS = "airQualityMarkers";
 
+  var fiabLeafletMapRef = null;
+
   var AIR_POINTS = [
     { lat: 39.2989, lon: 16.2538, label: "Cosenza" },
     { lat: 39.3315, lon: 16.2412, label: "Rende" },
@@ -480,13 +482,71 @@
     d.edit.handlers.remove.tooltip.text = "Clic su un elemento da eliminare.";
   }
 
+  function isMobileLayoutBreakpoint() {
+    return window.matchMedia("(max-width: 960px)").matches;
+  }
+
+  /** Header mobile: scroll → barra compatta (solo titolo + logo). Una sola registrazione. */
+  function setupMobileScrollHeaderOnce() {
+    if (setupMobileScrollHeaderOnce._installed) return;
+    setupMobileScrollHeaderOnce._installed = true;
+    var mq = window.matchMedia("(max-width: 960px)");
+    var ticking = false;
+    var SCROLL_COMPACT_ON = 48;
+    var SCROLL_COMPACT_OFF = 16;
+    var prevCompact = document.body.classList.contains("site-header--compact");
+    function bumpMap() {
+      if (fiabLeafletMapRef && fiabLeafletMapRef.invalidateSize) {
+        setTimeout(function () {
+          fiabLeafletMapRef.invalidateSize();
+        }, 100);
+      }
+    }
+    function update() {
+      ticking = false;
+      if (!mq.matches) {
+        document.body.classList.remove("site-header--compact");
+        var off = false;
+        if (off !== prevCompact) {
+          prevCompact = off;
+          bumpMap();
+        }
+        return;
+      }
+      var y = window.scrollY || document.documentElement.scrollTop || 0;
+      if (y >= SCROLL_COMPACT_ON) document.body.classList.add("site-header--compact");
+      else if (y <= SCROLL_COMPACT_OFF) document.body.classList.remove("site-header--compact");
+      var now = document.body.classList.contains("site-header--compact");
+      if (now !== prevCompact) {
+        prevCompact = now;
+        bumpMap();
+      }
+    }
+    function onScrollOrResize() {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize);
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onScrollOrResize);
+    } else if (typeof mq.addListener === "function") {
+      mq.addListener(onScrollOrResize);
+    }
+    onScrollOrResize();
+  }
+
   /** Nasconde la colonna testuale: la mappa occupa tutta la riga; ripristino con lo stesso pulsante. */
   function setupLayoutTextPanelToggle(map) {
     var btn = document.getElementById("text-panel-toggle");
     if (!btn) return;
     var STORAGE_KEY = "fiabheatmap_text_panel_hidden";
     var labelEl = btn.querySelector(".text-panel-toggle__label");
+    var mqMobile = window.matchMedia("(max-width: 960px)");
     function apply(hidden) {
+      if (isMobileLayoutBreakpoint()) hidden = false;
       document.body.classList.toggle("body--text-panel-hidden", hidden);
       btn.setAttribute("aria-pressed", hidden ? "true" : "false");
       if (hidden) {
@@ -523,7 +583,21 @@
       }
     }
     apply(readStoredHidden());
+    function onMobileMqForTextPanel() {
+      if (mqMobile.matches) {
+        apply(false);
+        setTimeout(function () {
+          if (map && map.invalidateSize) map.invalidateSize();
+        }, 80);
+      }
+    }
+    if (typeof mqMobile.addEventListener === "function") {
+      mqMobile.addEventListener("change", onMobileMqForTextPanel);
+    } else if (typeof mqMobile.addListener === "function") {
+      mqMobile.addListener(onMobileMqForTextPanel);
+    }
     btn.addEventListener("click", function () {
+      if (isMobileLayoutBreakpoint()) return;
       apply(!document.body.classList.contains("body--text-panel-hidden"));
     });
   }
@@ -1732,11 +1806,15 @@
       'Aria: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0)'
     );
 
+    fiabLeafletMapRef = map;
+    setupMobileScrollHeaderOnce();
+
     setupLayoutTextPanelToggle(map);
 
     setTimeout(function () {
       map.invalidateSize();
     }, 100);
+    return map;
   }
 
   function run() {

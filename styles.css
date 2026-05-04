@@ -215,8 +215,56 @@ body {
     min-height: 100dvh;
   }
 
+  #text-panel-toggle,
+  .text-panel-toggle {
+    display: none !important;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    flex-shrink: 0;
+    padding: 1rem 1.1rem 1rem;
+    transition:
+      padding 0.22s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .site-header__logo-link {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
   .site-header__logo {
     max-width: min(7.35rem, 42vw);
+    transition: max-width 0.22s ease;
+  }
+
+  .site-header h1 {
+    transition: font-size 0.22s ease, line-height 0.22s ease;
+  }
+
+  body.site-header--compact .site-header {
+    padding: 0.42rem 0.85rem 0.48rem;
+    box-shadow: 0 3px 18px rgba(0, 31, 51, 0.38);
+  }
+
+  body.site-header--compact .site-header .badge-fiab,
+  body.site-header--compact .site-header p {
+    display: none !important;
+  }
+
+  body.site-header--compact .site-header__top {
+    align-items: center;
+  }
+
+  body.site-header--compact .site-header__logo {
+    max-width: min(4.25rem, 26vw);
+  }
+
+  body.site-header--compact .site-header h1 {
+    font-size: 1.02rem;
+    line-height: 1.22;
   }
 
   .mobile-map-shortcut {
@@ -258,14 +306,24 @@ body {
 
   .layout {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(50vh, 55vh);
+    grid-template-rows: auto minmax(58vh, min(86vh, 40rem));
     flex: none;
+  }
+
+  body.site-header--compact .layout {
+    grid-template-rows: auto minmax(68vh, min(92vh, 44rem));
   }
 }
 
 @media (max-width: 960px) and (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .site-header,
+  .site-header__logo,
+  .site-header h1 {
+    transition: none !important;
   }
 }
 
@@ -814,7 +872,11 @@ body.body--text-panel-hidden .text-panel-toggle__icon {
 
 @media (max-width: 960px) {
   #map {
-    min-height: 50vh;
+    min-height: 58vh;
+  }
+
+  body.site-header--compact #map {
+    min-height: 68vh;
   }
 }
 
