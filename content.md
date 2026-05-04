@@ -1,4 +1,4 @@
-**FIAB Cosenzaciclabile** propone questo strumento a **famiglie**, **comunità scolastiche** e **amministratori locali** per guardare insieme lo spazio urbano intorno alle scuole usando **elementi verificabili** (percorsi, attraversamenti, rete per chi va a piedi o in bici, qualità dell’aria in stima da modello) messi sulla **mappa** e confrontabili.
+**FIAB Cosenzaciclabile** propone questo strumento a **famiglie**, **comunità scolastiche** e **amministratori locali** per guardare insieme lo spazio urbano intorno alle scuole usando **elementi verificabili** (percorsi, attraversamenti, rete per chi va a piedi o in bici, qualità dell’aria) posizionati sulla **mappa** e confrontabili.
 
 L’obiettivo è **valorizzare un’iniziativa di mappatura partecipativa**, dare priorità a dove servono ascolto, progettazione condivisa e piccole grandi scelte che rendono **più sicuri** gli spostamenti casa–scuola, **più salubre** l’ambiente vicino ai plessi e **più equa** la città per chi non usa l’auto.
 
@@ -6,9 +6,9 @@ L’obiettivo è **valorizzare un’iniziativa di mappatura partecipativa**, dar
 
 ## Perché partire da dati condivisibili
 
-Le decisioni sul territorio meritano basi che **tutti possano controllare**: cosa c’è oggi in strada, dove manca continuità tra marciapiedi e piste, dove l’esposizione all’inquinamento è più critica nelle ore di entrata e uscita. Qui usiamo **dati aperti** (mappa collaborativa, modelli orientativi) così **famiglie e scuole** possono portare elementi concreti al tavolo e **enti locali** possono orientare risorse e comunicazione con più trasparenza.
+Le decisioni sul territorio meritano basi che **tutti possano controllare**: cosa c’è oggi in strada, dove manca continuità tra marciapiedi e piste, dove l’esposizione all’inquinamento è più critica nelle ore di entrata e uscita. In questo progetto usiamo **dati aperti** (mappa collaborativa, modelli orientativi) così **famiglie e scuole** possono portare elementi concreti al tavolo e **enti locali** possono orientare risorse e comunicazione con trasparenza.
 
-Questa pagina **non sostituisce** conteggi ufficiali di traffico, piani viari o rilievi ARPA: **integra** il dibattito con una visione geografica chiara.
+Questa pagina **non sostituisce** conteggi ufficiali di traffico, piani viari o rilievi ARPA ma **integra** il dibattito con una visione geografica chiara.
 
 ---
 

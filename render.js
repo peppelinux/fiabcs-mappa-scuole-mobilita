@@ -288,6 +288,28 @@
     return 2 * r * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
   }
 
+  function formatLatLngPair(lat, lng) {
+    return lat.toFixed(5) + ", " + lng.toFixed(5);
+  }
+
+  function googleStreetViewUrl(lat, lng) {
+    return (
+      "https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=" + lat + "," + lng
+    );
+  }
+
+  /** Coordinate + link Google Street View (HTML sicuro tranne href numerico). */
+  function mapPointCoordsAndStreetViewHtml(lat, lng) {
+    var pair = formatLatLngPair(lat, lng);
+    var sv = googleStreetViewUrl(lat, lng);
+    return (
+      escapeHtml(pair) +
+      ' <small>(WGS84)</small><br/><a href="' +
+      sv +
+      '" target="_blank" rel="noopener noreferrer">Apri in Google Street View</a>'
+    );
+  }
+
   function initMap(geo, osmCycle, osmPed, schoolsPoi) {
     var mapEl = document.getElementById(MAP_ID);
     if (!mapEl || typeof L === "undefined") {
@@ -460,7 +482,7 @@
               ? geom.coordinates
               : null;
         if (!lines) return;
-        var popupHtml =
+        var criticalBaseHtml =
           "<strong>" +
           escapeHtml(p.name || "") +
           "</strong><br/>" +
@@ -480,7 +502,13 @@
             weight: 5,
             opacity: 0.9,
           });
-          pl.bindPopup(popupHtml);
+          pl.on("click", function (e) {
+            var html =
+              criticalBaseHtml +
+              "<br/><br/>" +
+              mapPointCoordsAndStreetViewHtml(e.latlng.lat, e.latlng.lng);
+            L.popup().setLatLng(e.latlng).setContent(html).openOn(map);
+          });
           criticalGroup.addLayer(pl);
         }
       }
@@ -582,6 +610,38 @@
     var layersControl = L.control
       .layers(baseMaps, overlays, { collapsed: false, position: "topright" })
       .addTo(map);
+
+    (function setupMapCoordsReadoutAndClickStreetView() {
+      var CoordReadout = L.Control.extend({
+        options: { position: "bottomleft" },
+        onAdd: function () {
+          var div = L.DomUtil.create("div", "map-coords-readout");
+          div.setAttribute("role", "status");
+          div.title =
+            "Coordinate WGS84 (latitudine, longitudine) aggiornate al movimento del puntatore";
+          div.textContent = "—";
+          return div;
+        },
+      });
+      var coordCtrl = new CoordReadout().addTo(map);
+      var coordEl = coordCtrl.getContainer();
+      var mapRoot = map.getContainer();
+      function onRootMouseMove(domEv) {
+        var ll = map.mouseEventToLatLng(domEv);
+        coordEl.textContent = formatLatLngPair(ll.lat, ll.lng);
+      }
+      function onRootMouseLeave() {
+        coordEl.textContent = "—";
+      }
+      mapRoot.addEventListener("mousemove", onRootMouseMove);
+      mapRoot.addEventListener("mouseleave", onRootMouseLeave);
+      map.on("click", function (e) {
+        var html =
+          "<strong>Punto sulla mappa</strong><br/>" +
+          mapPointCoordsAndStreetViewHtml(e.latlng.lat, e.latlng.lng);
+        L.popup().setLatLng(e.latlng).setContent(html).openOn(map);
+      });
+    })();
 
     (function setupOverlayCategoriesBulkToggle() {
       var root = layersControl.getContainer();

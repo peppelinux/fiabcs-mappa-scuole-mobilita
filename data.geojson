@@ -12,10 +12,9 @@
       "type": "Feature",
       "properties": {
         "kind": "critical_segment",
-        "name": "Itinerario critico \u2014 centro, Rende, Citt\u00e0 2000",
-        "risk": "Contesto scolastico e flussi urbani: sicurezza e comfort per chi si muove a piedi e in bici (continuit\u00e0 ciclopedonale, velocit\u00e0, attraversamenti, qualit\u00e0 dell\u2019ambiente stradale) da analizzare tratto per tratto.",
-        "notes": "3 tratte (config), ~12.86 km, 377 vertici; routing Dijkstra su OSM (n\u224871 POI scuola). Rigenera: scripts/update-critical-segments.sh.",
-        "osm_filter": "routing_graph+dijkstra",
+        "name": "Itinerario critico cittadino",
+        "risk": "Percezione di sicurezza a comfort dei flussi urbani per chi si muove a piedi e in bici (continuit\u00e0 ciclopedonale, velocit\u00e0, attraversamenti, qualit\u00e0 dell\u2019ambiente stradale).",
+        "notes": "",
         "length_km": 12.86
       },
       "geometry": {

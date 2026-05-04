@@ -1,9 +1,8 @@
 {
   "_comment": "forbidden_snap_name_substrings: nodi su way highway con quel testo nei toponimi non usati come snap (insieme ai nodi di exclude_osm_way_ids). exclude_geometry_*: opzionale, può spezzare la rete se usato aggressivo.",
   "metadata": {
-    "name": "Itinerario critico — centro, Rende, Città 2000",
-    "risk": "Contesto scolastico e flussi urbani: sicurezza e comfort per chi si muove a piedi e in bici (continuità ciclopedonale, velocità, attraversamenti, qualità dell’ambiente stradale) da analizzare tratto per tratto.",
-    "note": "Itinerario critico: Dijkstra su grafo stradale (carreggiata / assi urbani), non su piste ciclabili dedicate: il builder esclude sempre cycleway, bicycle_road e path con bicycle=designated|official, oltre alla regex in routing. Assi: Via Pasquale Rossi, Viale della Repubblica, Via Riccardo Misasi, Via Panebianco, Via Pomponio Leto, … Esclusioni: routing.exclude_ways. Scuole: data/schools-poi.geojson.",
+    "name": "Itinerario critico cittadino",
+    "risk": "Percezione di sicurezza a comfort dei flussi urbani per chi si muove a piedi e in bici (continuit\u00e0 ciclopedonale, velocit\u00e0, attraversamenti, qualit\u00e0 dell\u2019ambiente stradale).",
     "osm_filter": "routing_graph+dijkstra",
     "critical_segments_source_template": "OpenStreetMap: grafo nel bbox (senza piste ciclabili dedicate), percorso {algorithm} tra waypoint; semplificazione ≥{simplify_m} m. ODbL."
   },
