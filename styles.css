@@ -332,16 +332,17 @@ body {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  align-items: center;
+  align-items: stretch;
   gap: 0;
   padding: 2px;
   margin-top: 6px !important;
   width: auto;
   max-width: none;
   background: #fff;
-  border-radius: var(--radius);
-  border: 1px solid rgba(0, 106, 167, 0.22);
-  box-shadow: 0 2px 12px rgba(0, 63, 102, 0.12);
+  border-radius: 4px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-bottom-color: rgba(0, 0, 0, 0.25);
+  box-shadow: none;
 }
 
 #map-wrap .map-draw-io__sr {
@@ -361,7 +362,7 @@ body {
   font-size: 0.72rem;
   font-weight: 600;
   padding: 0.32rem 0.45rem;
-  border-radius: var(--radius);
+  border-radius: 2px;
   border: 1px solid rgba(0, 106, 167, 0.28);
   background: #fff;
   color: var(--fiab-blue-dark);
@@ -373,29 +374,26 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  min-width: 30px;
-  padding: 0;
-  border-radius: 0;
+  box-sizing: border-box;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 2px;
+  border-radius: 2px;
   border: none;
-  border-bottom: 1px solid rgba(0, 106, 167, 0.15);
+  border-bottom: 1px solid #ddd;
   box-shadow: none;
-}
-
-#map-wrap .map-draw-io__btn--icon:first-child {
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
+  background-color: #fff;
+  background-clip: padding-box;
 }
 
 #map-wrap .map-draw-io__btn--icon:last-of-type {
   border-bottom: none;
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
 }
 
 #map-wrap .map-draw-io__btn--icon:hover {
-  background: var(--fiab-blue-tint);
+  background-color: #f4f4f4;
 }
 
 #map-wrap .map-draw-io__btn:focus-visible {
