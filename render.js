@@ -310,6 +310,24 @@
     );
   }
 
+  /** Solo http/https per collegamenti disegni utente (GeoJSON). */
+  function sanitizeUserDrawingHref(raw) {
+    if (!raw || typeof raw !== "string") return "";
+    var u = raw.trim();
+    if (!u) return "";
+    if (!/^https?:\/\//i.test(u)) {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(u)) return "";
+      u = "https://" + u;
+    }
+    try {
+      var parsed = new URL(u);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+      return parsed.href;
+    } catch (eHref) {
+      return "";
+    }
+  }
+
   function reverseGeocodePhoton(lat, lng) {
     var url =
       "https://photon.komoot.io/reverse?lat=" +
@@ -354,12 +372,12 @@
     );
     if (district && comune && district !== comune) {
       out.push(
-        "<div><strong>Città:</strong> " + escapeHtml(district) + "</div>",
+        "<div><strong>Zona:</strong> " + escapeHtml(district) + "</div>",
         "<div><strong>Comune:</strong> " + escapeHtml(comune) + "</div>"
       );
     } else {
       out.push(
-        "<div><strong>Città:</strong> " +
+        "<div><strong>Zona:</strong> " +
           (comune ? escapeHtml(comune) : "<span>—</span>") +
           "</div>",
         "<div><strong>Comune:</strong> " +
@@ -370,7 +388,8 @@
     return '<div class="map-popup-address">' + out.join("") + "</div>";
   }
 
-  function mapClickPopupHtml(latlng, photonProps, phase) {
+  /** Blocco indirizzo + coordinate + Street View (come click sulla mappa vuota). */
+  function mapContextBlockHtml(latlng, photonProps, phase) {
     var head = "<strong>Punto sulla mappa</strong>";
     var addr = "";
     if (phase === "loading") {
@@ -384,6 +403,93 @@
     var attr =
       '<small class="map-popup-photon-attrib">Dati indirizzo: <a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> / OpenStreetMap.</small>';
     return head + addr + "<br/>" + coords + "<br/>" + attr;
+  }
+
+  function mapClickPopupHtml(latlng, photonProps, phase) {
+    return mapContextBlockHtml(latlng, photonProps, phase);
+  }
+
+  /** Titolo, descrizione e link utente (senza contesto mappa). */
+  function userDrawingDetailsHtml(props) {
+    if (!props || typeof props !== "object") props = {};
+    var titolo =
+      props.titolo != null && String(props.titolo).trim()
+        ? String(props.titolo).trim()
+        : props.title != null && String(props.title).trim()
+          ? String(props.title).trim()
+          : "";
+    var desc =
+      props.descrizione != null
+        ? String(props.descrizione)
+        : props.description != null
+          ? String(props.description)
+          : "";
+    desc = desc.trim();
+    var linkHref = sanitizeUserDrawingHref(
+      props.href != null ? String(props.href) : props.url != null ? String(props.url) : ""
+    );
+    if (!titolo && !desc && !linkHref) return "";
+    var head = titolo ? escapeHtml(titolo) : "Disegno";
+    var html = "<strong>" + head + "</strong>";
+    if (desc)
+      html +=
+        "<br/><span class=\"map-draw-user-desc\">" +
+        escapeHtml(desc).replace(/\n/g, "<br/>") +
+        "</span>";
+    if (linkHref)
+      html +=
+        '<br/><a class="map-draw-user-link" href="' +
+        escapeHtml(linkHref) +
+        '" target="_blank" rel="noopener noreferrer">Apri il collegamento</a>';
+    return html;
+  }
+
+  function userDrawingFullPopupHtml(latlng, props, phase, photonProps) {
+    var userPart = userDrawingDetailsHtml(props);
+    var sep = userPart ? '<hr class="map-popup-sep" />' : "";
+    return userPart + sep + mapContextBlockHtml(latlng, photonProps, phase);
+  }
+
+  /** Testi Leaflet.draw in italiano (mutazione di L.drawLocal). */
+  function applyLeafletDrawItalian() {
+    if (typeof L === "undefined" || !L.drawLocal) return;
+    var d = L.drawLocal;
+    d.draw.toolbar.actions.title = "Annulla il disegno";
+    d.draw.toolbar.actions.text = "Annulla";
+    d.draw.toolbar.finish.title = "Termina il disegno";
+    d.draw.toolbar.finish.text = "Termina";
+    d.draw.toolbar.undo.title = "Elimina l’ultimo punto";
+    d.draw.toolbar.undo.text = "Elimina ultimo punto";
+    d.draw.toolbar.buttons.polyline = "Disegna una polilinea";
+    d.draw.toolbar.buttons.polygon = "Disegna un poligono";
+    d.draw.toolbar.buttons.rectangle = "Disegna un rettangolo";
+    d.draw.toolbar.buttons.circle = "Disegna un cerchio";
+    d.draw.toolbar.buttons.marker = "Aggiungi un punto";
+    d.draw.toolbar.buttons.circlemarker = "Aggiungi un cerchio piccolo";
+    d.draw.handlers.polyline.error =
+      "<strong>Errore:</strong> i lati della forma non possono incrociarsi.";
+    d.draw.handlers.polyline.tooltip.start = "Clic per iniziare la linea.";
+    d.draw.handlers.polyline.tooltip.cont = "Clic per aggiungere un punto.";
+    d.draw.handlers.polyline.tooltip.end =
+      "Doppio clic sul punto finale o «Termina» per chiudere la linea.";
+    d.draw.handlers.polygon.tooltip.start = "Clic per iniziare il poligono.";
+    d.draw.handlers.polygon.tooltip.cont = "Clic per continuare.";
+    d.draw.handlers.polygon.tooltip.end = "Clic sul primo punto per chiudere.";
+    d.draw.handlers.marker.tooltip.start = "Clic sulla mappa per posizionare il punto.";
+    d.draw.handlers.simpleshape.tooltip.end = "Rilascia il mouse per completare.";
+    d.edit.toolbar.actions.save.title = "Salva le modifiche";
+    d.edit.toolbar.actions.save.text = "Salva";
+    d.edit.toolbar.actions.cancel.title = "Annulla le modifiche";
+    d.edit.toolbar.actions.cancel.text = "Annulla";
+    d.edit.toolbar.actions.clearAll.title = "Rimuovi tutti gli elementi disegnati";
+    d.edit.toolbar.actions.clearAll.text = "Rimuovi tutto";
+    d.edit.toolbar.buttons.edit = "Modifica i disegni";
+    d.edit.toolbar.buttons.editDisabled = "Nessun disegno da modificare";
+    d.edit.toolbar.buttons.remove = "Elimina disegni";
+    d.edit.toolbar.buttons.removeDisabled = "Nessun disegno da eliminare";
+    d.edit.handlers.edit.tooltip.text = "Trascina i vertici o i punti per modificare.";
+    d.edit.handlers.edit.tooltip.subtext = "Annulla per ripristinare.";
+    d.edit.handlers.remove.tooltip.text = "Clic su un elemento da eliminare.";
   }
 
   function initMap(geo, osmCycle, osmPed, schoolsPoi) {
@@ -730,6 +836,653 @@
             popup.setContent(mapClickPopupHtml(e.latlng, null, "addrfail"));
           });
       });
+    })();
+
+    (function setupUserDrawingTools() {
+      if (typeof L.Control.Draw === "undefined") {
+        return;
+      }
+      applyLeafletDrawItalian();
+
+      var STORAGE_KEY = "fiabheatmap_user_drawings_v1";
+      var USER_DRAW_PANE = "userDrawings";
+      var ioStatusEl = null;
+      map.createPane(USER_DRAW_PANE);
+      map.getPane(USER_DRAW_PANE).style.zIndex = "640";
+
+      var drawnItems = L.featureGroup().addTo(map);
+      var nextDrawingIdSeq = 0;
+
+      function ensureDrawingId(layer) {
+        if (!layer || layer._fiabDrawId != null) return;
+        layer._fiabDrawId = ++nextDrawingIdSeq;
+      }
+
+      function layerDrawingLabel(layer) {
+        var p = (layer.feature && layer.feature.properties) || {};
+        var t =
+          p.titolo != null && String(p.titolo).trim()
+            ? String(p.titolo).trim()
+            : p.title != null && String(p.title).trim()
+              ? String(p.title).trim()
+              : "";
+        if (t) return t;
+        if (layer instanceof L.Marker) return "Punto";
+        if (layer instanceof L.Polygon) return "Poligono";
+        if (layer instanceof L.Polyline) return "Linea";
+        return "Disegno";
+      }
+
+      function setLayerDrawingVisible(layer, visible) {
+        if (!layer) return;
+        layer._fiabDrawingVisible = !!visible;
+        var el = typeof layer.getElement === "function" ? layer.getElement() : null;
+        if (el) {
+          el.style.display = visible ? "" : "none";
+          el.style.pointerEvents = visible ? "" : "none";
+        }
+      }
+
+      function geoJsonToFeatureCollection(data) {
+        if (!data || typeof data !== "object") return null;
+        if (data.type === "FeatureCollection") return data;
+        if (data.type === "Feature") {
+          return { type: "FeatureCollection", features: [data] };
+        }
+        return null;
+      }
+
+      function bindUserDrawingPopup(layer) {
+        ensureDrawingId(layer);
+        if (typeof layer.unbindPopup === "function") {
+          layer.unbindPopup();
+        }
+        if (layer._fiabDrawPopupClick) {
+          layer.off("click", layer._fiabDrawPopupClick);
+          layer._fiabDrawPopupClick = null;
+        }
+        layer._fiabDrawPopupClick = function (e) {
+          if (e && typeof L !== "undefined" && L.DomEvent && L.DomEvent.stopPropagation) {
+            L.DomEvent.stopPropagation(e);
+          } else if (e && e.originalEvent && e.originalEvent.stopPropagation) {
+            e.originalEvent.stopPropagation();
+          }
+          var latlng = e.latlng;
+          var props = (layer.feature && layer.feature.properties) || {};
+          var popup = L.popup({ maxWidth: 320 })
+            .setLatLng(latlng)
+            .setContent(userDrawingFullPopupHtml(latlng, props, "loading", null))
+            .openOn(map);
+          reverseGeocodePhoton(latlng.lat, latlng.lng)
+            .then(function (photonProps) {
+              if (!popup || !map.hasLayer(popup)) return;
+              popup.setContent(
+                userDrawingFullPopupHtml(
+                  latlng,
+                  props,
+                  photonProps ? "loaded" : "addrfail",
+                  photonProps
+                )
+              );
+            })
+            .catch(function () {
+              if (!popup || !map.hasLayer(popup)) return;
+              popup.setContent(userDrawingFullPopupHtml(latlng, props, "addrfail", null));
+            });
+        };
+        layer.on("click", layer._fiabDrawPopupClick);
+      }
+
+      function setDrawingFeatureProps(layer, titolo, descrizione, href) {
+        if (!layer.feature) layer.feature = {};
+        layer.feature.type = "Feature";
+        layer.feature.properties = layer.feature.properties || {};
+        layer.feature.properties.titolo = titolo.trim();
+        layer.feature.properties.descrizione = (descrizione || "").trim();
+        var hrefNorm = sanitizeUserDrawingHref(href || "");
+        if (hrefNorm) layer.feature.properties.href = hrefNorm;
+        else delete layer.feature.properties.href;
+        bindUserDrawingPopup(layer);
+      }
+
+      function openDrawingMetadataModal(map, onConfirm, onAbort) {
+        var root = map.getContainer();
+        var overlay = document.createElement("div");
+        overlay.className = "map-draw-meta-backdrop";
+        overlay.setAttribute("role", "dialog");
+        overlay.setAttribute("aria-modal", "true");
+        overlay.setAttribute("aria-labelledby", "map-draw-meta-heading");
+
+        var panel = document.createElement("div");
+        panel.className = "map-draw-meta-panel";
+
+        var h = document.createElement("h2");
+        h.id = "map-draw-meta-heading";
+        h.className = "map-draw-meta-heading";
+        h.textContent = "Dettaglio disegno";
+
+        var err = document.createElement("p");
+        err.className = "map-draw-meta-error";
+        err.setAttribute("role", "alert");
+        err.hidden = true;
+
+        var lblT = document.createElement("label");
+        lblT.className = "map-draw-meta-label";
+        lblT.setAttribute("for", "map-draw-meta-titolo");
+        lblT.textContent = "Titolo";
+        var inpT = document.createElement("input");
+        inpT.id = "map-draw-meta-titolo";
+        inpT.type = "text";
+        inpT.className = "map-draw-meta-input";
+        inpT.setAttribute("autocomplete", "off");
+        inpT.setAttribute("maxlength", "200");
+
+        var lblD = document.createElement("label");
+        lblD.className = "map-draw-meta-label";
+        lblD.setAttribute("for", "map-draw-meta-desc");
+        lblD.textContent = "Descrizione";
+        var taD = document.createElement("textarea");
+        taD.id = "map-draw-meta-desc";
+        taD.className = "map-draw-meta-textarea";
+        taD.rows = 4;
+        taD.setAttribute("maxlength", "4000");
+
+        var lblU = document.createElement("label");
+        lblU.className = "map-draw-meta-label";
+        lblU.setAttribute("for", "map-draw-meta-href");
+        lblU.textContent = "Collegamento (indirizzo web, opzionale)";
+        var inpU = document.createElement("input");
+        inpU.id = "map-draw-meta-href";
+        inpU.type = "url";
+        inpU.className = "map-draw-meta-input";
+        inpU.setAttribute("autocomplete", "off");
+        inpU.setAttribute("maxlength", "2000");
+        inpU.setAttribute("placeholder", "https://…");
+
+        var btnRow = document.createElement("div");
+        btnRow.className = "map-draw-meta-actions";
+        var btnCancel = document.createElement("button");
+        btnCancel.type = "button";
+        btnCancel.className = "map-draw-meta-btn map-draw-meta-btn--secondary";
+        btnCancel.textContent = "Annulla";
+        var btnOk = document.createElement("button");
+        btnOk.type = "button";
+        btnOk.className = "map-draw-meta-btn map-draw-meta-btn--primary";
+        btnOk.textContent = "Salva disegno";
+
+        function cleanup(committed) {
+          document.removeEventListener("keydown", onDocKey);
+          if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          if (!committed && typeof onAbort === "function") onAbort();
+        }
+
+        function onDocKey(ev) {
+          if (ev.key === "Escape") {
+            ev.preventDefault();
+            cleanup(false);
+          }
+        }
+
+        function trySave() {
+          var t = inpT.value.trim();
+          if (!t) {
+            err.textContent = "Inserisci un titolo.";
+            err.hidden = false;
+            inpT.focus();
+            return;
+          }
+          var hrefRaw = inpU.value.trim();
+          if (hrefRaw) {
+            var hrefNorm = sanitizeUserDrawingHref(hrefRaw);
+            if (!hrefNorm) {
+              err.textContent = "Indirizzo web non valido: usa https://… (o http://…).";
+              err.hidden = false;
+              inpU.focus();
+              return;
+            }
+            hrefRaw = hrefNorm;
+          } else {
+            hrefRaw = "";
+          }
+          err.hidden = true;
+          onConfirm(t, taD.value, hrefRaw);
+          cleanup(true);
+        }
+
+        btnCancel.addEventListener("click", function () {
+          cleanup(false);
+        });
+        btnOk.addEventListener("click", trySave);
+        inpT.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            trySave();
+          }
+        });
+
+        overlay.addEventListener("click", function (ev) {
+          if (ev.target === overlay) cleanup(false);
+        });
+        document.addEventListener("keydown", onDocKey);
+
+        panel.appendChild(h);
+        panel.appendChild(err);
+        panel.appendChild(lblT);
+        panel.appendChild(inpT);
+        panel.appendChild(lblD);
+        panel.appendChild(taD);
+        panel.appendChild(lblU);
+        panel.appendChild(inpU);
+        btnRow.appendChild(btnCancel);
+        btnRow.appendChild(btnOk);
+        panel.appendChild(btnRow);
+        overlay.appendChild(panel);
+        root.appendChild(overlay);
+
+        setTimeout(function () {
+          inpT.focus();
+        }, 0);
+      }
+
+      function addGeoJsonToDrawn(fc) {
+        if (!fc || !fc.features || !fc.features.length) return 0;
+        var n = 0;
+        L.geoJSON(fc, {
+          pane: USER_DRAW_PANE,
+          onEachFeature: function (feat, lyr) {
+            bindUserDrawingPopup(lyr);
+          },
+        }).eachLayer(function (ly) {
+          drawnItems.addLayer(ly);
+          ensureDrawingId(ly);
+          if (ly._fiabDrawingVisible === false) setLayerDrawingVisible(ly, false);
+          n += 1;
+        });
+        return n;
+      }
+
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          var fc = geoJsonToFeatureCollection(parsed);
+          if (fc) addGeoJsonToDrawn(fc);
+        }
+      } catch (eLoad) {
+        /* ignore */
+      }
+
+      var saveTimer = null;
+      function persistDrawingsNow() {
+        try {
+          var gj = drawnItems.toGeoJSON();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(gj));
+          if (ioStatusEl) {
+            var c = drawnItems.getLayers().length;
+            ioStatusEl.textContent =
+              c > 0
+                ? "Salvato nel browser (" + c + " element" + (c === 1 ? "o" : "i") + ")."
+                : "Nessun disegno: salvataggio vuoto nel browser.";
+          }
+        } catch (e) {
+          if (e && e.name === "QuotaExceededError") {
+            if (ioStatusEl)
+              ioStatusEl.textContent =
+                "Spazio nel browser insufficiente: esporta e svuota i disegni.";
+          } else if (ioStatusEl) ioStatusEl.textContent = "Salvataggio locale non riuscito.";
+        }
+      }
+
+      function schedulePersistDrawings() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(persistDrawingsNow, 450);
+      }
+
+      function openDrawingsManagerPanel() {
+        var root = map.getContainer();
+        if (root.querySelector(".map-draw-list-backdrop")) return;
+
+        var backdrop = document.createElement("div");
+        backdrop.className = "map-draw-list-backdrop";
+        backdrop.setAttribute("role", "dialog");
+        backdrop.setAttribute("aria-modal", "true");
+        backdrop.setAttribute("aria-labelledby", "map-draw-list-title");
+
+        var panel = document.createElement("div");
+        panel.className = "map-draw-list-panel";
+
+        var head = document.createElement("div");
+        head.className = "map-draw-list-head";
+        var h = document.createElement("h2");
+        h.id = "map-draw-list-title";
+        h.className = "map-draw-list-title";
+        h.textContent = "Disegni sulla mappa";
+        head.appendChild(h);
+
+        var bulk = document.createElement("div");
+        bulk.className = "map-draw-list-bulk";
+        var btnAllOn = document.createElement("button");
+        btnAllOn.type = "button";
+        btnAllOn.className = "map-draw-list-bulk-btn";
+        btnAllOn.textContent = "Mostra tutti";
+        var btnAllOff = document.createElement("button");
+        btnAllOff.type = "button";
+        btnAllOff.className = "map-draw-list-bulk-btn";
+        btnAllOff.textContent = "Nascondi tutti";
+        bulk.appendChild(btnAllOn);
+        bulk.appendChild(btnAllOff);
+        head.appendChild(bulk);
+
+        var listBody = document.createElement("div");
+        listBody.className = "map-draw-list-body";
+
+        var foot = document.createElement("div");
+        foot.className = "map-draw-list-foot";
+        var btnClose = document.createElement("button");
+        btnClose.type = "button";
+        btnClose.className = "map-draw-meta-btn map-draw-meta-btn--secondary";
+        btnClose.textContent = "Chiudi";
+        foot.appendChild(btnClose);
+
+        function closePanel() {
+          document.removeEventListener("keydown", onEsc);
+          if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+        }
+
+        function onEsc(ev) {
+          if (ev.key === "Escape") {
+            ev.preventDefault();
+            closePanel();
+          }
+        }
+
+        function rebuildList() {
+          listBody.innerHTML = "";
+          var layers = drawnItems.getLayers().slice();
+          if (!layers.length) {
+            var empty = document.createElement("p");
+            empty.className = "map-draw-list-empty";
+            empty.textContent = "Nessun disegno salvato.";
+            listBody.appendChild(empty);
+            return;
+          }
+          layers.forEach(function (ly) {
+            ensureDrawingId(ly);
+            var row = document.createElement("div");
+            row.className = "map-draw-list-row";
+
+            var cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.className = "map-draw-list-cb";
+            cb.checked = ly._fiabDrawingVisible !== false;
+            cb.title = "Mostra o nascondi sulla mappa";
+            cb.setAttribute("aria-label", "Visibile sulla mappa: " + layerDrawingLabel(ly));
+            cb.addEventListener("change", function () {
+              setLayerDrawingVisible(ly, cb.checked);
+              if (ioStatusEl)
+                ioStatusEl.textContent = cb.checked ? "Disegno visibile sulla mappa." : "Disegno nascosto sulla mappa.";
+            });
+
+            var lab = document.createElement("span");
+            lab.className = "map-draw-list-row-label";
+            lab.textContent = layerDrawingLabel(ly);
+
+            var btnDel = document.createElement("button");
+            btnDel.type = "button";
+            btnDel.className = "map-draw-list-row-del";
+            btnDel.setAttribute("aria-label", "Elimina " + layerDrawingLabel(ly));
+            btnDel.title = "Elimina questo disegno";
+            btnDel.innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 7h16M9 7V5h6v2m-5 4v7m4-7v7M10 11h4"/></svg>';
+            btnDel.addEventListener("click", function () {
+              if (
+                !window.confirm(
+                  "Eliminare il disegno «" + layerDrawingLabel(ly) + "» dalla mappa e dal salvataggio locale?"
+                )
+              ) {
+                return;
+              }
+              if (ly._fiabDrawPopupClick) {
+                ly.off("click", ly._fiabDrawPopupClick);
+                ly._fiabDrawPopupClick = null;
+              }
+              drawnItems.removeLayer(ly);
+              schedulePersistDrawings();
+              if (ioStatusEl) ioStatusEl.textContent = "Disegno eliminato.";
+              rebuildList();
+            });
+
+            row.appendChild(cb);
+            row.appendChild(lab);
+            row.appendChild(btnDel);
+            listBody.appendChild(row);
+          });
+        }
+
+        btnAllOn.addEventListener("click", function () {
+          drawnItems.eachLayer(function (ly) {
+            setLayerDrawingVisible(ly, true);
+          });
+          rebuildList();
+          if (ioStatusEl) ioStatusEl.textContent = "Tutti i disegni sono visibili.";
+        });
+        btnAllOff.addEventListener("click", function () {
+          drawnItems.eachLayer(function (ly) {
+            setLayerDrawingVisible(ly, false);
+          });
+          rebuildList();
+          if (ioStatusEl) ioStatusEl.textContent = "Tutti i disegni sono nascosti sulla mappa.";
+        });
+
+        btnClose.addEventListener("click", closePanel);
+        backdrop.addEventListener("click", function (ev) {
+          if (ev.target === backdrop) closePanel();
+        });
+        document.addEventListener("keydown", onEsc);
+
+        panel.appendChild(head);
+        panel.appendChild(listBody);
+        panel.appendChild(foot);
+        backdrop.appendChild(panel);
+        root.appendChild(backdrop);
+
+        rebuildList();
+      }
+
+      var drawControl = new L.Control.Draw({
+        position: "topleft",
+        draw: {
+          polyline: {
+            shapeOptions: {
+              color: "#b71c1c",
+              weight: 4,
+              opacity: 0.92,
+            },
+          },
+          polygon: {
+            shapeOptions: {
+              color: "#b71c1c",
+              weight: 2,
+              fillColor: "#b71c1c",
+              fillOpacity: 0.18,
+            },
+          },
+          marker: true,
+          rectangle: false,
+          circle: false,
+          circlemarker: false,
+        },
+        edit: {
+          featureGroup: drawnItems,
+          remove: true,
+        },
+      });
+      map.addControl(drawControl);
+
+      var IoBar = L.Control.extend({
+        options: { position: "topleft" },
+        onAdd: function () {
+          var wrap = L.DomUtil.create("div", "leaflet-bar leaflet-control map-draw-io");
+          wrap.setAttribute("role", "toolbar");
+          wrap.setAttribute(
+            "aria-label",
+            "Salvataggio disegni nel browser, esporta, importa ed elenco disegni"
+          );
+          L.DomEvent.disableClickPropagation(wrap);
+          L.DomEvent.disableScrollPropagation(wrap);
+
+          var svgNs = "http://www.w3.org/2000/svg";
+          function iconSvg(pathInner) {
+            return (
+              '<svg xmlns="' +
+              svgNs +
+              '" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">' +
+              pathInner +
+              "</svg>"
+            );
+          }
+          var icons = {
+            info: iconSvg(
+              '<path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>'
+            ),
+            list: iconSvg(
+              '<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M8 6h13M8 12h13M8 18h13M3.5 6h1v1h-1zm0 6h1v1h-1zm0 6h1v1h-1z"/>'
+            ),
+            download: iconSvg(
+              '<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/>'
+            ),
+            upload: iconSvg(
+              '<path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M17 9l-5-5-5 5M12 4v12"/>'
+            ),
+          };
+
+          function mkIconBtn(svgHtml, ariaLabel, title) {
+            var b = L.DomUtil.create("button", "map-draw-io__btn map-draw-io__btn--icon", wrap);
+            b.type = "button";
+            b.innerHTML = svgHtml;
+            b.setAttribute("aria-label", ariaLabel);
+            b.title = title;
+            return b;
+          }
+
+          var n0 = drawnItems.getLayers().length;
+          mkIconBtn(
+            icons.info,
+            "Informazioni su salvataggio locale, export GeoJSON, elenco disegni e strumenti di modifica.",
+            "Disegni salvati solo in questo browser. Esporta / importa GeoJSON; elenco per mostrare, nascondere o eliminare. Modifica disegni: barra strumenti sopra (anche elimina singoli elementi)."
+          );
+
+          var fileInput = L.DomUtil.create("input", "map-draw-io__file");
+          fileInput.type = "file";
+          fileInput.accept = ".geojson,.json,application/geo+json";
+          fileInput.setAttribute("aria-hidden", "true");
+          fileInput.tabIndex = -1;
+          fileInput.addEventListener("change", function () {
+            var f = fileInput.files && fileInput.files[0];
+            if (!f) return;
+            var reader = new FileReader();
+            reader.onload = function () {
+              try {
+                var j = JSON.parse(reader.result);
+                var fcImp = geoJsonToFeatureCollection(j);
+                if (!fcImp || !fcImp.features || !fcImp.features.length) {
+                  if (ioStatusEl) ioStatusEl.textContent = "File GeoJSON non valido o vuoto.";
+                  return;
+                }
+                var added = addGeoJsonToDrawn(fcImp);
+                schedulePersistDrawings();
+                if (ioStatusEl)
+                  ioStatusEl.textContent =
+                    added > 0
+                      ? "Importati " +
+                        added +
+                        " element" +
+                        (added === 1 ? "o" : "i") +
+                        " e salvato nel browser."
+                      : "Nessun livello importabile dal file.";
+              } catch (eImp) {
+                if (ioStatusEl)
+                  ioStatusEl.textContent = "Impossibile leggere il file (JSON non valido).";
+              }
+            };
+            reader.onerror = function () {
+              if (ioStatusEl) ioStatusEl.textContent = "Lettura file non riuscita.";
+            };
+            reader.readAsText(f, "UTF-8");
+          });
+
+          mkIconBtn(
+            icons.download,
+            "Esporta GeoJSON",
+            "Scarica un file .geojson con tutti i disegni sulla mappa"
+          ).addEventListener("click", function () {
+            var gj = drawnItems.toGeoJSON();
+            var blob = new Blob([JSON.stringify(gj, null, 2)], {
+              type: "application/geo+json;charset=utf-8",
+            });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "disegni-mappa-fiab.geojson";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            if (ioStatusEl) ioStatusEl.textContent = "File GeoJSON scaricato.";
+          });
+
+          mkIconBtn(
+            icons.upload,
+            "Importa GeoJSON",
+            "Aggiungi geometrie da un file GeoJSON (si uniscono ai disegni già presenti)"
+          ).addEventListener("click", function () {
+            fileInput.value = "";
+            fileInput.click();
+          });
+
+          mkIconBtn(
+            icons.list,
+            "Elenco disegni",
+            "Elenco di tutti i disegni: mostra o nascondi sulla mappa, elimina singoli elementi"
+          ).addEventListener("click", function () {
+            openDrawingsManagerPanel();
+          });
+
+          /* Dopo i pulsanti: input file fuori dal flusso (position absolute). */
+          wrap.appendChild(fileInput);
+
+          ioStatusEl = L.DomUtil.create("div", "map-draw-io__sr", wrap);
+          ioStatusEl.setAttribute("aria-live", "polite");
+          ioStatusEl.setAttribute("aria-atomic", "true");
+          ioStatusEl.textContent =
+            n0 > 0
+              ? "Ripristinati " + n0 + " element" + (n0 === 1 ? "o" : "i") + " dal browser."
+              : "Barra disegni: salvataggio automatico in questo browser; esporta e importa GeoJSON.";
+
+          return wrap;
+        },
+      });
+      map.addControl(new IoBar());
+
+      map.on(L.Draw.Event.CREATED, function (e) {
+        var layer = e.layer;
+        if (layer && layer.options) {
+          layer.options.pane = USER_DRAW_PANE;
+        }
+        openDrawingMetadataModal(
+          map,
+          function (titolo, descrizione, href) {
+            setDrawingFeatureProps(layer, titolo, descrizione, href);
+            drawnItems.addLayer(layer);
+            schedulePersistDrawings();
+          },
+          function () {
+            /* Annulla: non aggiungere il disegno alla mappa. */
+          }
+        );
+      });
+      map.on(L.Draw.Event.EDITED, schedulePersistDrawings);
+      map.on(L.Draw.Event.DELETED, schedulePersistDrawings);
     })();
 
     (function setupOverlayCategoriesBulkToggle() {
