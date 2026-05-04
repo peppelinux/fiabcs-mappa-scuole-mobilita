@@ -480,6 +480,54 @@
     d.edit.handlers.remove.tooltip.text = "Clic su un elemento da eliminare.";
   }
 
+  /** Nasconde la colonna testuale: la mappa occupa tutta la riga; ripristino con lo stesso pulsante. */
+  function setupLayoutTextPanelToggle(map) {
+    var btn = document.getElementById("text-panel-toggle");
+    if (!btn) return;
+    var STORAGE_KEY = "fiabheatmap_text_panel_hidden";
+    var labelEl = btn.querySelector(".text-panel-toggle__label");
+    function apply(hidden) {
+      document.body.classList.toggle("body--text-panel-hidden", hidden);
+      btn.setAttribute("aria-pressed", hidden ? "true" : "false");
+      if (hidden) {
+        btn.setAttribute(
+          "aria-label",
+          "Mostra di nuovo il pannello testuale accanto alla mappa"
+        );
+        btn.title =
+          "Mostra il testo: su schermi piccoli torna anche il blocco sopra la mappa";
+        if (labelEl) labelEl.textContent = "Mostra testo";
+      } else {
+        btn.setAttribute(
+          "aria-label",
+          "Nascondi il pannello testuale per far occupare alla mappa tutta la riga"
+        );
+        btn.title = "Nascondi il testo e usa tutta la riga per la mappa";
+        if (labelEl) labelEl.textContent = "Nascondi testo";
+      }
+      try {
+        sessionStorage.setItem(STORAGE_KEY, hidden ? "1" : "0");
+      } catch (e) {}
+      setTimeout(function () {
+        if (map && map.invalidateSize) map.invalidateSize();
+      }, 50);
+      setTimeout(function () {
+        if (map && map.invalidateSize) map.invalidateSize();
+      }, 350);
+    }
+    function readStoredHidden() {
+      try {
+        return sessionStorage.getItem(STORAGE_KEY) === "1";
+      } catch (e) {
+        return false;
+      }
+    }
+    apply(readStoredHidden());
+    btn.addEventListener("click", function () {
+      apply(!document.body.classList.contains("body--text-panel-hidden"));
+    });
+  }
+
   function initMap(geo, osmCycle, osmPed, schoolsPoi) {
     var mapEl = document.getElementById(MAP_ID);
     if (!mapEl || typeof L === "undefined") {
@@ -1612,6 +1660,8 @@
     map.attributionControl.addAttribution(
       'Aria: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0)'
     );
+
+    setupLayoutTextPanelToggle(map);
 
     setTimeout(function () {
       map.invalidateSize();

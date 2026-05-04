@@ -69,6 +69,31 @@
         <div id="map" role="application" aria-label="Mappa di scuole, percorsi e priorità per la mobilità"></div>
         <button
           type="button"
+          id="text-panel-toggle"
+          class="text-panel-toggle"
+          aria-pressed="false"
+          aria-controls="content"
+          aria-label="Nascondi il pannello testuale a sinistra per espandere la mappa"
+          title="Nascondi il testo e usa tutta la riga per la mappa"
+        >
+          <svg
+            class="text-panel-toggle__icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              fill="currentColor"
+              d="M15 4l2 2-6 6 6 6-2 2-8-8 8-8zm-6 0v2H6V4h3zm0 16v2H6v-2h3z"
+            />
+          </svg>
+          <span class="text-panel-toggle__label">Nascondi testo</span>
+        </button>
+        <button
+          type="button"
           id="layers-panel-toggle"
           class="map-layers-toggle"
           aria-pressed="false"
