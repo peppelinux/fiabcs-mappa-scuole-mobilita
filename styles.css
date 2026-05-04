@@ -202,6 +202,11 @@ body {
 
 .site-footer {
   flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem 1rem;
   padding: 0.45rem 1.25rem 0.55rem;
   font-size: 0.72rem;
   color: var(--muted);
@@ -211,12 +216,50 @@ body {
 
 .site-footer p {
   margin: 0;
+  flex: 1 1 14rem;
+  min-width: 0;
   line-height: 1.4;
 }
 
 .site-footer a {
   color: var(--fiab-blue);
   font-weight: 600;
+}
+
+.site-footer a.site-footer__github-link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 6px;
+  line-height: 0;
+  color: var(--fiab-blue-dark);
+  background: #fff;
+  border: 1px solid rgba(0, 106, 167, 0.22);
+  box-shadow: 0 1px 4px rgba(0, 63, 102, 0.08);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease;
+}
+
+.site-footer a.site-footer__github-link:hover {
+  background: var(--fiab-blue-tint);
+  box-shadow: 0 2px 8px rgba(0, 63, 102, 0.12);
+  transform: translateY(-1px);
+}
+
+.site-footer a.site-footer__github-link:focus-visible {
+  outline: 2px solid var(--fiab-gold);
+  outline-offset: 2px;
+}
+
+.site-footer__github-icon {
+  display: block;
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .site-footer code {
@@ -288,6 +331,7 @@ body {
   body.site-header--compact .site-header__logo {
     max-width: min(4.25rem, 26vw);
   }
+
 
   body.site-header--compact .site-header__heading {
     font-size: 1.02rem;
