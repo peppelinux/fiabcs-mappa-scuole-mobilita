@@ -713,6 +713,30 @@ body.body--text-panel-hidden .text-panel-toggle__icon {
   word-break: break-word;
 }
 
+.leaflet-container .map-draw-list-row-export {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--fiab-blue-dark);
+  cursor: pointer;
+}
+
+.leaflet-container .map-draw-list-row-export:hover {
+  background: rgba(0, 106, 167, 0.1);
+}
+
+.leaflet-container .map-draw-list-row-export:focus-visible {
+  outline: 2px solid var(--fiab-gold);
+  outline-offset: 1px;
+}
+
 .leaflet-container .map-draw-list-row-del {
   flex-shrink: 0;
   display: flex;

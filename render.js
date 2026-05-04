@@ -928,6 +928,42 @@
         return null;
       }
 
+      function layerToGeoJSONFeatureCollection(layer) {
+        if (!layer || typeof layer.toGeoJSON !== "function") return null;
+        var gj = layer.toGeoJSON();
+        if (!gj || typeof gj !== "object") return null;
+        if (gj.type === "FeatureCollection") return gj;
+        if (gj.type === "Feature") {
+          return { type: "FeatureCollection", features: [gj] };
+        }
+        if (gj.coordinates !== undefined || gj.geometries !== undefined) {
+          return {
+            type: "FeatureCollection",
+            features: [
+              {
+                type: "Feature",
+                properties: (layer.feature && layer.feature.properties) || {},
+                geometry: gj,
+              },
+            ],
+          };
+        }
+        return null;
+      }
+
+      function slugForDrawingFilename(label) {
+        var raw = String(label || "").trim();
+        var s = raw
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        if (!s) s = "disegno";
+        return s.length > 48 ? s.slice(0, 48) : s;
+      }
+
       function bindUserDrawingPopup(layer) {
         ensureDrawingId(layer);
         if (typeof layer.unbindPopup === "function") {
@@ -1263,6 +1299,40 @@
             lab.className = "map-draw-list-row-label";
             lab.textContent = layerDrawingLabel(ly);
 
+            var btnExport = document.createElement("button");
+            btnExport.type = "button";
+            btnExport.className = "map-draw-list-row-export";
+            btnExport.setAttribute(
+              "aria-label",
+              "Esporta GeoJSON: " + layerDrawingLabel(ly)
+            );
+            btnExport.title = "Scarica solo questo disegno come file .geojson";
+            btnExport.innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 11l5 5 5-5M12 4v12"/></svg>';
+            btnExport.addEventListener("click", function () {
+              var fc = layerToGeoJSONFeatureCollection(ly);
+              if (!fc) {
+                if (ioStatusEl)
+                  ioStatusEl.textContent = "Esportazione GeoJSON non disponibile per questo elemento.";
+                return;
+              }
+              var base = slugForDrawingFilename(layerDrawingLabel(ly));
+              var fname = "disegno-" + base + ".geojson";
+              var blob = new Blob([JSON.stringify(fc, null, 2)], {
+                type: "application/geo+json;charset=utf-8",
+              });
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement("a");
+              a.href = url;
+              a.download = fname;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              if (ioStatusEl)
+                ioStatusEl.textContent = "Esportato un file GeoJSON per «" + layerDrawingLabel(ly) + "».";
+            });
+
             var btnDel = document.createElement("button");
             btnDel.type = "button";
             btnDel.className = "map-draw-list-row-del";
@@ -1290,6 +1360,7 @@
 
             row.appendChild(cb);
             row.appendChild(lab);
+            row.appendChild(btnExport);
             row.appendChild(btnDel);
             listBody.appendChild(row);
           });
