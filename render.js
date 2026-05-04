@@ -362,29 +362,17 @@
     }
     var street = streetNameFromPhotonProps(p);
     var comune = (p.city || p.town || p.village || "").trim();
-    var district = (p.district || p.locality || "").trim();
-    var cittaDisplay = district || comune;
     var out = [];
     out.push(
       "<div><strong>Strada:</strong> " +
         (street ? escapeHtml(street) : "<span>—</span>") +
         "</div>"
     );
-    if (district && comune && district !== comune) {
-      out.push(
-        "<div><strong>Zona:</strong> " + escapeHtml(district) + "</div>",
-        "<div><strong>Comune:</strong> " + escapeHtml(comune) + "</div>"
-      );
-    } else {
-      out.push(
-        "<div><strong>Zona:</strong> " +
-          (comune ? escapeHtml(comune) : "<span>—</span>") +
-          "</div>",
-        "<div><strong>Comune:</strong> " +
-          (comune ? escapeHtml(comune) : "<span>—</span>") +
-          "</div>"
-      );
-    }
+    out.push(
+      "<div><strong>Comune:</strong> " +
+        (comune ? escapeHtml(comune) : "<span>—</span>") +
+        "</div>"
+    );
     return '<div class="map-popup-address">' + out.join("") + "</div>";
   }
 
